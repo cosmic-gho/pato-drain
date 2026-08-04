@@ -1193,7 +1193,7 @@ a { text-decoration: none; color: inherit; }
   .chip { display: none; }
   .hero-actions { justify-content: center; }
   .hero-stats { justify-content: center; }
-  .nav-links, .nav-cta { display: none; }
+  .nav-links{ display: none; }
   .nav-hamburger { display: flex; }
   .tiers-grid { grid-template-columns: 1fr 1fr; }
   .claim-wrapper { gap: 48px; }
