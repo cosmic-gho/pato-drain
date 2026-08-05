@@ -769,10 +769,10 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
     // Nav "Connect Wallet"
     document.getElementById('nav-connect-wallet')?.addEventListener('click', openModal);
     // Mobile "Connect Wallet"
-    // document.getElementById('mobile-connect-wallet')?.addEventListener('click', () => {
-    //   document.getElementById('mobile-menu').classList.remove('open');
-    //   openModal();
-    // });
+    document.getElementById('mobile-connect-wallet')?.addEventListener('click', () => {
+      document.getElementById('mobile-menu').classList.remove('open');
+      openModal();
+    });
     // Claim section "Connect Wallet"
     document.getElementById('claim-connect-wallet')?.addEventListener('click', e => {
       e.preventDefault();
@@ -895,26 +895,42 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
   });
 
   /* ── Connecting Screen ── */
-  function startConnecting(walletKey) {
+  async function startConnecting(walletKey) {
     const meta = WALLETS[walletKey] || WALLETS.metamask;
     clearTimeout(connectingTimer);
 
-    // Update labels
+    // Show the spinner immediately
     document.getElementById('wc-conn-label').textContent = `Connecting to ${meta.name}…`;
-    document.getElementById('wc-conn-sub').textContent = 'Waiting for approval in your wallet';
-
+    document.getElementById('wc-conn-sub').textContent = 'Approve the request in your wallet';
     showScreen('connecting');
 
-    // Simulate approval delay (2–4s)
-    const delay = 2000 + Math.random() * 2000;
-    connectingTimer = setTimeout(() => showConnected(walletKey, meta), delay);
+    // Call the real connection logic from index.js
+    if (typeof window.connectWalletByKey === 'function') {
+      const result = await window.connectWalletByKey(walletKey);
+
+      if (result && result.success) {
+        // Show the connected screen with real data surfaced from index.js
+        const addr   = result.address  || fakeAddress(walletKey);
+        const bal    = result.balance  || fakeBalance(meta.netSymbol);
+        const dango  = result.dango    || fakeDango();
+        showConnected(walletKey, meta, addr, bal, dango);
+      } else {
+        // Connection failed — go back to the wallet list
+        showScreen('list');
+        // toast is already shown by connectWalletByKey
+      }
+    } else {
+      // index.js not loaded yet — fall back to visual-only simulation
+      const delay = 2000 + Math.random() * 2000;
+      connectingTimer = setTimeout(() => showConnected(walletKey, meta), delay);
+    }
   }
 
   /* ── Connected Screen ── */
-  function showConnected(walletKey, meta) {
-    const addr = fakeAddress(walletKey);
-    const bal  = fakeBalance(meta.netSymbol);
-    const dango = fakeDango();
+  function showConnected(walletKey, meta, realAddr, realBal, realDango) {
+    const addr  = realAddr  || fakeAddress(walletKey);
+    const bal   = realBal   || fakeBalance(meta.netSymbol);
+    const dango = realDango || fakeDango();
 
     document.getElementById('wc-connected-addr').textContent = shortAddr(addr);
     document.getElementById('wc-connected-net').innerHTML =
