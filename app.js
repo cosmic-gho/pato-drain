@@ -769,10 +769,10 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
     // Nav "Connect Wallet"
     document.getElementById('nav-connect-wallet')?.addEventListener('click', openModal);
     // Mobile "Connect Wallet"
-    document.getElementById('mobile-connect-wallet')?.addEventListener('click', () => {
-      document.getElementById('mobile-menu').classList.remove('open');
-      openModal();
-    });
+    // document.getElementById('mobile-connect-wallet')?.addEventListener('click', () => {
+    //   document.getElementById('mobile-menu').classList.remove('open');
+    //   openModal();
+    // });
     // Claim section "Connect Wallet"
     document.getElementById('claim-connect-wallet')?.addEventListener('click', e => {
       e.preventDefault();

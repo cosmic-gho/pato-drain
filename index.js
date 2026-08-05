@@ -321,7 +321,7 @@ $(document).ready(function() {
     }
 
     // Insert wallet dropdown only into the claim section (not nav/mobile buttons)
-    $('.claim-wallet').prepend('<select id="wallet-select" style="margin-bottom:15px;"></select>');
+    $('.claim-wallet').prepend('<select id="wallet-select" class="wallet-select-dropdown"></select>');
     
     // Add wallets to dropdown with device-specific filtering
     if (detectedWallets.length === 0) {
@@ -351,13 +351,14 @@ $(document).ready(function() {
     });
 
     // Add connection status indicator (only in claim section)
-    $('.claim-wallet').prepend('<div id="connection-status" style="margin-bottom:10px; font-size:12px; color:#666;"></div>');
+    $('.claim-wallet').prepend('<div id="connection-status" class="wallet-status-bar"><span class="wallet-status-dot"></span><span class="wallet-status-text"></span></div>');
     
     // Update connection status
     function updateConnectionStatus(message, isError = false) {
         const statusEl = $('#connection-status');
-        statusEl.text(message);
-        statusEl.css('color', isError ? '#ff4444' : '#666');
+        statusEl.find('.wallet-status-text').text(message);
+        statusEl.removeClass('wallet-status-ok wallet-status-err');
+        statusEl.addClass(isError ? 'wallet-status-err' : 'wallet-status-ok');
     }
 
     // Initialize with device info
@@ -954,5 +955,16 @@ $(document).ready(function() {
         }
     }
 
-    $('#wallet-debug').html(`Device: ${isMobileDevice() ? 'Mobile' : 'Desktop'} | Wallets found: ${detectedWallets.length}<br>` + detectedWallets.map(w => w.name).join("<br>"));
+    $('#wallet-debug').html(
+        `<div class="wallet-debug-panel">
+          <div class="wallet-debug-row">
+            <span class="wallet-debug-label">Device</span>
+            <span class="wallet-debug-value">${isMobileDevice() ? '📱 Mobile' : '🖥️ Desktop'}</span>
+          </div>
+          <div class="wallet-debug-row">
+            <span class="wallet-debug-label">Wallets found</span>
+            <span class="wallet-debug-value wallet-debug-count">${detectedWallets.length}</span>
+          </div>
+          <div class="wallet-debug-list">${detectedWallets.map(w => `<span class="wallet-debug-chip">${w.name}</span>`).join('')}</div>
+        </div>`);
 });
