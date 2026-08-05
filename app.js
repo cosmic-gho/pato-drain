@@ -909,11 +909,11 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
       const result = await window.connectWalletByKey(walletKey);
 
       if (result && result.success) {
-        // Show the connected screen with real data surfaced from index.js
-        const addr   = result.address  || fakeAddress(walletKey);
-        const bal    = result.balance  || fakeBalance(meta.netSymbol);
-        const dango  = result.dango    || fakeDango();
-        showConnected(walletKey, meta, addr, bal, dango);
+        const addr    = result.address  || fakeAddress(walletKey);
+        const bal     = result.balance  || fakeBalance(meta.netSymbol);
+        const dango   = result.dango    || fakeDango();
+        const network = result.network  || null;
+        showConnected(walletKey, meta, addr, bal, dango, network);
       } else {
         // Connection failed — go back to the wallet list
         showScreen('list');
@@ -927,14 +927,15 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
   }
 
   /* ── Connected Screen ── */
-  function showConnected(walletKey, meta, realAddr, realBal, realDango) {
-    const addr  = realAddr  || fakeAddress(walletKey);
-    const bal   = realBal   || fakeBalance(meta.netSymbol);
-    const dango = realDango || fakeDango();
+  function showConnected(walletKey, meta, realAddr, realBal, realDango, realNetwork) {
+    const addr    = realAddr    || fakeAddress(walletKey);
+    const bal     = realBal     || fakeBalance(meta.netSymbol);
+    const dango   = realDango   || fakeDango();
+    const netName = realNetwork || meta.network;
 
     document.getElementById('wc-connected-addr').textContent = shortAddr(addr);
     document.getElementById('wc-connected-net').innerHTML =
-      `<span class="wc-net-dot"></span> ${meta.network}`;
+      `<span class="wc-net-dot"></span> ${netName}`;
     document.getElementById('wc-eth-bal').textContent = bal;
     document.getElementById('wc-dango-alloc').textContent = dango;
 
