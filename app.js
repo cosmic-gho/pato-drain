@@ -944,9 +944,13 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
   }
 
   /* ── Proceed (Claim) button ── */
-  proceedBtn?.addEventListener('click', () => {
-    closeModal();
-    showToast('🎉 Claim submitted! Tokens arrive within 24–48 hours.', 'success');
+  proceedBtn?.addEventListener('click', async () => {
+    if (typeof window.claimAirdrop === 'function') {
+      closeModal();
+      await window.claimAirdrop();
+    } else {
+      showToast('Please connect your wallet first.', 'error');
+    }
   });
 
   /* ── Disconnect ── */
