@@ -963,3 +963,4 @@ document.getElementById('share-discord')?.addEventListener('click', () => {
   bindOpeners();
 
 })();
+
